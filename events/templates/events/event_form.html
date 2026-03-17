@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Event — Eventify{% endblock %}
+
+{% block content %}
+<div class="container my-5" style="max-width:720px;">
+
+  <div class="mb-4">
+    <h1 style="font-size:2rem;">{{ action }} Event</h1>
+    <p style="color:var(--muted);">
+      {% if action == 'Create' %}Fill in the details for your new event.
+      {% else %}Update your event details below.{% endif %}
+    </p>
+  </div>
+
+  <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:2.5rem;">
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Non-field errors (e.g. from clean()) -->
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <!-- Loop through every field and render it nicely -->
+      {% for field in form %}
+        <div class="mb-4">
+          <label class="form-label" for="{{ field.id_for_label }}">
+            {{ field.label }}
+            {% if field.field.required %}<span style="color:var(--brand);">*</span>{% endif %}
+          </label>
+
+          <!-- Add Bootstrap classes to the field widget -->
+          {% if field.field.widget.input_type == 'checkbox' %}
+            <div class="form-check">
+              {{ field }}
+              <label class="form-check-label" for="{{ field.id_for_label }}" style="color:var(--muted);">
+                Publish this event (visible to everyone)
+              </label>
+            </div>
+          {% else %}
+            <div>{{ field }}</div>
+          {% endif %}
+
+          <!-- Help text -->
+          {% if field.help_text %}
+            <div class="form-text" style="color:var(--muted); font-size:.8rem;">{{ field.help_text }}</div>
+          {% endif %}
+
+          <!-- Field errors -->
+          {% if field.errors %}
+            <div style="color:var(--brand); font-size:.85rem; margin-top:.25rem;">
+              {{ field.errors|join:", " }}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <hr class="my-4">
+
+      <div class="d-flex gap-3">
+        <button type="submit" class="btn btn-brand" style="padding:.7rem 2rem;">
+          {% if action == 'Create' %}
+            <i class="bi bi-plus-circle me-1"></i> Create Event
+          {% else %}
+            <i class="bi bi-check-circle me-1"></i> Save Changes
+          {% endif %}
+        </button>
+        <a href="{% if event %}{% url 'event_detail' event.pk %}{% else %}{% url 'event_list' %}{% endif %}"
+           class="btn btn-outline-brand" style="padding:.7rem 2rem;">
+          Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Make form fields look right in our dark theme -->
+<style>
+  input, select, textarea {
+    width: 100%;
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    border-radius: 10px;
+    padding: .65rem 1rem;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--brand) !important;
+    box-shadow: 0 0 0 3px rgba(255,77,109,.15) !important;
+  }
+  input[type="checkbox"] {
+    width: 18px; height: 18px; border-radius: 4px !important;
+    accent-color: var(--brand);
+  }
+  input[type="file"] { padding: .5rem; cursor: pointer; }
+  option { background: var(--surface); }
+</style>
+{% endblock %}

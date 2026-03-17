@@ -1,0 +1,57 @@
+<!-- verification_pending.html -->
+{% extends "base.html" %}
+{% block title %}Verification Pending — Eventify{% endblock %}
+{% block content %}
+<div class="container my-5" style="max-width:520px; text-align:center;">
+  <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:3rem 2rem;">
+
+    {% if profile.status == 'approved' %}
+      <div style="font-size:3.5rem; margin-bottom:1rem;">✅</div>
+      <h2>You're Verified!</h2>
+      <p style="color:var(--muted); margin:1rem 0 2rem;">
+        You can now create paid events. Your verified badge will appear on all your events.
+      </p>
+      <a href="{% url 'event_create' %}" class="btn btn-brand">Create a Paid Event</a>
+
+    {% elif profile.status == 'pending' %}
+      <div style="font-size:3.5rem; margin-bottom:1rem;">⏳</div>
+      <h2>Application Under Review</h2>
+      <p style="color:var(--muted); margin:1rem 0;">
+        We're reviewing your details. This usually takes 24–48 hours.
+        We'll notify you by email once a decision is made.
+      </p>
+      <div style="background:var(--surface); border-radius:12px; padding:1rem; margin:1.5rem 0; text-align:left;">
+        <div style="font-size:.85rem; color:var(--muted);">
+          <div class="mb-1"><strong style="color:var(--text);">Submitted:</strong> {{ profile.submitted_at|date:"M d, Y g:i A" }}</div>
+          <div><strong style="color:var(--text);">Status:</strong>
+            <span style="color:#FFBE0B;">⏳ Pending Review</span>
+          </div>
+        </div>
+      </div>
+      <a href="{% url 'home' %}" style="color:var(--muted); font-size:.875rem;">Back to Home</a>
+
+    {% elif profile.status == 'rejected' %}
+      <div style="font-size:3.5rem; margin-bottom:1rem;">❌</div>
+      <h2>Application Rejected</h2>
+      {% if profile.rejection_reason %}
+        <div style="background:rgba(255,77,109,.08); border:1px solid rgba(255,77,109,.2); border-radius:12px; padding:1rem; margin:1rem 0; text-align:left;">
+          <div style="font-size:.8rem; color:var(--muted); margin-bottom:.25rem;">Reason given:</div>
+          <div style="color:var(--text);">{{ profile.rejection_reason }}</div>
+        </div>
+      {% endif %}
+      <p style="color:var(--muted); margin-bottom:1.5rem; font-size:.875rem;">
+        You can reapply after correcting the issue above.
+      </p>
+      <a href="{% url 'apply_for_verification' %}" class="btn btn-brand">Reapply</a>
+
+    {% elif profile.status == 'suspended' %}
+      <div style="font-size:3.5rem; margin-bottom:1rem;">🚫</div>
+      <h2>Account Suspended</h2>
+      <p style="color:var(--muted);">
+        Your organiser account has been suspended. Contact support@eventify.co.ke if you believe this is an error.
+      </p>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

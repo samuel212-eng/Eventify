@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Become a Verified Organiser — Eventify{% endblock %}
+
+{% block content %}
+<div class="container my-5" style="max-width:680px;">
+
+  <!-- Header -->
+  <div style="text-align:center; margin-bottom:3rem;">
+    <div style="font-size:3rem; margin-bottom:1rem;">🛡️</div>
+    <h1 style="font-size:2rem; margin-bottom:.75rem;">Become a Verified Organiser</h1>
+    <p style="color:var(--muted); max-width:480px; margin:0 auto;">
+      Verification protects your attendees and builds trust. It takes 24–48 hours.
+      Free events don't require verification.
+    </p>
+  </div>
+
+  <!-- What you get -->
+  <div style="
+    background:rgba(255,77,109,0.06); border:1px solid rgba(255,77,109,0.2);
+    border-radius:var(--radius); padding:1.5rem; margin-bottom:2.5rem;
+  ">
+    <h5 style="margin-bottom:1rem; font-family:'Syne',sans-serif;">Verified organisers get:</h5>
+    <div class="row g-2">
+      {% for benefit in "A verified ✓ badge on all your events,Ability to create paid events,Higher search ranking,Faster support response,Attendee trust & more ticket sales"|split:"," %}
+        <div class="col-md-6" style="color:var(--muted); font-size:.9rem;">
+          <i class="bi bi-check-circle-fill me-2" style="color:#19C878;"></i>{{ benefit }}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- The form -->
+  <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:2.5rem;">
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Section: Identity -->
+      <h5 style="font-family:'Syne',sans-serif; margin-bottom:1.5rem; color:var(--brand);">
+        1. Identity Verification
+      </h5>
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label">Phone Number *</label>
+          {{ form.phone_number }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">National ID / Passport Number *</label>
+          {{ form.id_number }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">
+            Photo of your ID *
+            <span style="color:var(--muted); font-size:.75rem; display:block;">Clear photo of front of ID</span>
+          </label>
+          {{ form.id_document }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">
+            Selfie holding your ID *
+            <span style="color:var(--muted); font-size:.75rem; display:block;">Your face + ID in same photo</span>
+          </label>
+          {{ form.selfie_with_id }}
+        </div>
+      </div>
+
+      <hr style="margin-bottom:1.75rem;">
+
+      <!-- Section: Profile -->
+      <h5 style="font-family:'Syne',sans-serif; margin-bottom:1.5rem; color:var(--brand);">
+        2. Public Profile (Builds Attendee Trust)
+      </h5>
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label">Organisation Name (optional)</label>
+          {{ form.organization_name }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Website (optional)</label>
+          {{ form.website }}
+        </div>
+        <div class="col-12">
+          <label class="form-label">Bio — tell attendees who you are</label>
+          {{ form.bio }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Social Media Link (optional)</label>
+          {{ form.social_media }}
+        </div>
+      </div>
+
+      <hr style="margin-bottom:1.75rem;">
+
+      <!-- Section: Payout -->
+      <h5 style="font-family:'Syne',sans-serif; margin-bottom:.75rem; color:var(--brand);">
+        3. M-Pesa Payout Number
+      </h5>
+      <p style="color:var(--muted); font-size:.85rem; margin-bottom:1rem;">
+        Ticket revenue is held securely and released to this number 24 hours after your event ends.
+        This protects your attendees if an event is cancelled.
+      </p>
+      <div class="col-md-6">
+        <label class="form-label">M-Pesa Number for Payouts *</label>
+        {{ form.mpesa_number }}
+      </div>
+
+      {% if form.errors %}
+        <div class="alert alert-danger mt-3">
+          Please fix the errors above before submitting.
+        </div>
+      {% endif %}
+
+      <button type="submit" class="btn btn-brand mt-4" style="padding:.75rem 2.5rem;">
+        <i class="bi bi-shield-check me-1"></i> Submit for Verification
+      </button>
+    </form>
+  </div>
+
+  <p style="text-align:center; color:var(--muted); font-size:.8rem; margin-top:1.5rem;">
+    🔒 Your ID documents are stored securely and only seen by Eventify staff.
+    We never share them with third parties.
+  </p>
+
+</div>
+
+<style>
+  input, select, textarea { width:100%; background:var(--surface)!important; border:1px solid var(--border)!important; color:var(--text)!important; border-radius:10px; padding:.65rem 1rem; }
+  input:focus, select:focus, textarea:focus { border-color:var(--brand)!important; box-shadow:0 0 0 3px rgba(255,77,109,.15)!important; outline:none; }
+  input[type="file"] { padding:.5rem; }
+</style>
+{% endblock %}

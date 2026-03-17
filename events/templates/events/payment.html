@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Pay for {{ event.title }} — Eventify{% endblock %}
+
+{% block content %}
+<div class="container my-5" style="max-width:520px;">
+
+  <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:2.5rem;">
+
+    <!-- M-Pesa logo area -->
+    <div style="text-align:center; margin-bottom:2rem;">
+      <div style="
+        display:inline-flex; align-items:center; gap:.75rem;
+        background:rgba(0,150,57,0.12); border:1px solid rgba(0,150,57,0.3);
+        border-radius:50px; padding:.6rem 1.5rem; margin-bottom:1.5rem;
+      ">
+        <span style="font-size:1.4rem;">📱</span>
+        <span style="color:#00963A; font-family:'Syne',sans-serif; font-weight:700; font-size:1.1rem;">
+          Lipa na M-Pesa
+        </span>
+      </div>
+      <h2 style="font-size:1.6rem; margin-bottom:.5rem;">Complete your registration</h2>
+      <p style="color:var(--muted); font-size:.9rem;">
+        An M-Pesa prompt will be sent to your phone
+      </p>
+    </div>
+
+    <!-- Event summary -->
+    <div style="
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:12px; padding:1.25rem; margin-bottom:1.75rem;
+    ">
+      <div style="font-weight:600; margin-bottom:.4rem;">{{ event.title }}</div>
+      <div style="color:var(--muted); font-size:.875rem;">
+        <i class="bi bi-calendar3 me-1" style="color:var(--brand);"></i>{{ event.date|date:"M d, Y · g:i A" }}
+      </div>
+      <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border);
+                  display:flex; justify-content:space-between; align-items:center;">
+        <span style="color:var(--muted); font-size:.875rem;">Amount to pay</span>
+        <span style="font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:700; color:var(--brand);">
+          KES {{ event.price }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Phone number form -->
+    <form method="POST" action="{% url 'initiate_payment' event.pk %}">
+      {% csrf_token %}
+      <div class="mb-4">
+        <label class="form-label">Your M-Pesa Phone Number</label>
+        <div class="input-group">
+          <span class="input-group-text"
+                style="background:var(--surface); border-color:var(--border); color:var(--muted);">
+            🇰🇪 +254
+          </span>
+          <input
+            type="tel"
+            name="phone_number"
+            class="form-control"
+            placeholder="7XX XXX XXX"
+            required
+          >
+        </div>
+        <div style="color:var(--muted); font-size:.78rem; margin-top:.4rem;">
+          Enter your number in any format: 0712345678 or 254712345678
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-brand w-100" style="
+        padding:.8rem; font-size:1rem;
+        background: linear-gradient(135deg, #00963A, #007A30);
+        border-radius:50px;
+      ">
+        <i class="bi bi-phone me-1"></i> Send M-Pesa Prompt
+      </button>
+    </form>
+
+    <p style="text-align:center; color:var(--muted); font-size:.8rem; margin-top:1.5rem;">
+      🔒 Payments are processed securely by Safaricom
+    </p>
+  </div>
+</div>
+
+<style>
+  input { width:100%; background:var(--surface)!important; border:1px solid var(--border)!important; color:var(--text)!important; border-radius:10px; padding:.65rem 1rem; }
+  input:focus { border-color:#00963A!important; box-shadow:0 0 0 3px rgba(0,150,58,.15)!important; outline:none; }
+</style>
+{% endblock %}

@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+{% block title %}{{ event.title }} — Eventify{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row g-5">
+
+    <!-- ════════════════════════════
+         LEFT — main content
+    ════════════════════════════ -->
+    <div class="col-lg-8">
+
+      <!-- Banner image -->
+      {% if event.image %}
+        <img src="{{ event.image.url }}" alt="{{ event.title }}"
+             style="width:100%;height:380px;object-fit:cover;border-radius:var(--radius);margin-bottom:2rem;">
+      {% else %}
+        <div class="img-placeholder" style="height:380px;border-radius:var(--radius);margin-bottom:2rem;font-size:5rem;">
+          <i class="bi bi-calendar-event"></i>
+        </div>
+      {% endif %}
+
+      <!-- Tags row -->
+      <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+        {% if event.category %}
+          <span class="tag">{{ event.category.name }}</span>
+        {% endif %}
+
+        <!-- FEATURE 2: Attendee count badge -->
+        <span style="background:rgba(58,134,255,.12);color:#3A86FF;font-size:.72rem;font-weight:600;padding:.25rem .75rem;border-radius:50px;text-transform:uppercase;letter-spacing:.5px;">
+          <i class="bi bi-people-fill me-1"></i>{{ event.spots_taken }} going
+        </span>
+
+        {% if event.average_rating %}
+          <span style="background:rgba(255,190,11,.12);color:#FFBE0B;font-size:.72rem;font-weight:600;padding:.25rem .75rem;border-radius:50px;">
+            ★ {{ event.average_rating }} &nbsp;({{ event.review_count }} review{{ event.review_count|pluralize }})
+          </span>
+        {% endif %}
+      </div>
+
+      <h1 style="font-size:2.5rem;margin-bottom:1rem;">{{ event.title }}</h1>
+
+      <div class="d-flex flex-wrap gap-4 mb-3" style="color:var(--muted);">
+        <span><i class="bi bi-calendar3 me-1" style="color:var(--brand);"></i>{{ event.date|date:"l, F j, Y" }}</span>
+        <span><i class="bi bi-clock me-1"     style="color:var(--brand);"></i>{{ event.date|date:"g:i A" }}</span>
+        <span><i class="bi bi-geo-alt me-1"   style="color:var(--brand);"></i>{{ event.location }}</span>
+      </div>
+
+      <!-- ────────────────────────────
+           FEATURE 7: PROGRESS BAR
+      ──────────────────────────── -->
+      <div style="margin-bottom:2rem;">
+        <div class="d-flex justify-content-between mb-1" style="font-size:.85rem;color:var(--muted);">
+          <span>
+            <i class="bi bi-people me-1"></i>
+            <strong style="color:var(--text);">{{ event.spots_taken }}</strong> / {{ event.capacity }} spots filled
+          </span>
+          <span style="font-weight:600;color:
+            {% if event.capacity_percentage >= 90 %}#FF6B6B
+            {% elif event.capacity_percentage >= 70 %}#FFBE0B
+            {% else %}#19C878{% endif %};">
+            {{ event.capacity_percentage }}%
+          </span>
+        </div>
+        <div style="background:var(--surface);border-radius:50px;height:8px;overflow:hidden;">
+          <div style="
+            height:100%;border-radius:50px;
+            width:{{ event.capacity_percentage }}%;
+            background:{% if event.capacity_percentage >= 90 %}#FF6B6B{% elif event.capacity_percentage >= 70 %}#FFBE0B{% else %}#19C878{% endif %};
+          "></div>
+        </div>
+        {% if event.capacity_percentage >= 80 and not event.is_full %}
+          <div style="color:#FFBE0B;font-size:.8rem;margin-top:.35rem;">
+            ⚡ Filling fast — only {{ event.spots_left }} spot{{ event.spots_left|pluralize }} left!
+          </div>
+        {% endif %}
+      </div>
+
+      <hr>
+      <h3 style="margin:1.5rem 0 1rem;">About this event</h3>
+      <div style="color:var(--muted);line-height:1.8;white-space:pre-line;">{{ event.description }}</div>
+
+      <!-- Organiser card -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-top:2rem;">
+        <div class="d-flex align-items-center gap-3">
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:1.2rem;">
+            {{ event.organizer.username|first|upper }}
+          </div>
+          <div>
+            <div style="font-weight:600;">{{ event.organizer.get_full_name|default:event.organizer.username }}</div>
+            <div style="color:var(--muted);font-size:.875rem;">Event Organiser</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ────────────────────────────
+           FEATURE 1: REVIEWS
+      ──────────────────────────── -->
+      <div id="reviews" style="margin-top:3rem;">
+        <h3 style="margin-bottom:1.5rem;">
+          Reviews
+          {% if event.average_rating %}
+            <span style="color:#FFBE0B;font-size:1.1rem;margin-left:.5rem;">★ {{ event.average_rating }}</span>
+            <span style="color:var(--muted);font-size:.9rem;"> ({{ event.review_count }})</span>
+          {% endif %}
+        </h3>
+
+        <!-- Review form (only for registered users who haven't reviewed) -->
+        {% if user.is_authenticated and user_is_registered and not user_has_reviewed %}
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:2rem;">
+            <h5 style="margin-bottom:1rem;">Leave a Review</h5>
+            <form method="POST" action="{% url 'submit_review' event.pk %}">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label class="form-label">Rating</label>
+                <div class="d-flex gap-1" id="star-picker">
+                  {% for i in "12345" %}
+                    <label style="cursor:pointer;margin:0;">
+                      <input type="radio" name="rating" value="{{ i }}" style="display:none;">
+                      <span class="star" data-val="{{ i }}"
+                            style="font-size:2rem;color:var(--border);transition:color .1s;line-height:1;">★</span>
+                    </label>
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Comment</label>
+                <textarea name="comment" rows="3"
+                  style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:.65rem 1rem;outline:none;"
+                  placeholder="Share your experience..."></textarea>
+              </div>
+              <button type="submit" class="btn btn-brand" style="padding:.6rem 1.8rem;">Post Review</button>
+            </form>
+          </div>
+        {% endif %}
+
+        <!-- Display reviews -->
+        {% for review in reviews %}
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem;">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div class="d-flex align-items-center gap-2">
+                <div style="width:36px;height:36px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;">
+                  {{ review.author.username|first|upper }}
+                </div>
+                <div>
+                  <div style="font-weight:600;font-size:.9rem;">{{ review.author.get_full_name|default:review.author.username }}</div>
+                  <div style="color:#FFBE0B;font-size:.85rem;letter-spacing:1px;">
+                    {% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}<span style="opacity:.3;">★</span>{% endif %}{% endfor %}
+                  </div>
+                </div>
+              </div>
+              <div style="color:var(--muted);font-size:.8rem;">{{ review.created_at|date:"M d, Y" }}</div>
+            </div>
+            <p style="color:var(--muted);font-size:.9rem;margin:0;line-height:1.6;">{{ review.comment }}</p>
+            {% if user == review.author %}
+              <a href="{% url 'delete_review' review.pk %}"
+                 onclick="return confirm('Delete this review?')"
+                 style="color:var(--brand);font-size:.75rem;margin-top:.5rem;display:inline-block;">
+                Delete my review
+              </a>
+            {% endif %}
+          </div>
+        {% empty %}
+          <p style="color:var(--muted);padding:1.5rem;background:var(--surface);border-radius:var(--radius);">
+            No reviews yet.
+            {% if user_is_registered %}You attended this event — leave the first review!{% endif %}
+          </p>
+        {% endfor %}
+      </div>
+
+      {% if user.is_authenticated and user != event.organizer %}
+        <div style="text-align:center;margin-top:2rem;">
+          <a href="{% url 'report_event' event.pk %}" style="color:var(--muted);font-size:.78rem;">
+            <i class="bi bi-flag me-1"></i>Report this event
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- ════════════════════════════
+         RIGHT — booking box
+    ════════════════════════════ -->
+    <div class="col-lg-4">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;position:sticky;top:90px;">
+
+        <div class="price-tag mb-3" style="font-size:2rem;">
+          {% if event.price == 0 %}Free{% else %}KES {{ event.price }}{% endif %}
+        </div>
+
+        <div class="mb-3" style="color:var(--muted);font-size:.9rem;">
+          <div class="d-flex justify-content-between mb-2">
+            <span><i class="bi bi-people me-1"></i>Attending</span>
+            <strong style="color:var(--text);">{{ event.spots_taken }}</strong>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span><i class="bi bi-ticket me-1"></i>Spots left</span>
+            <span style="font-weight:600;color:{% if event.is_full %}#FF6B6B{% else %}#19C878{% endif %};">
+              {% if event.is_full %}Sold Out{% else %}{{ event.spots_left }}{% endif %}
+            </span>
+          </div>
+          {% if event.is_full %}
+            <div class="d-flex justify-content-between mb-2">
+              <span><i class="bi bi-clock-history me-1"></i>Waitlist</span>
+              <span style="color:#FFBE0B;font-weight:600;">{{ event.waitlist.count }} waiting</span>
+            </div>
+          {% endif %}
+          <div class="d-flex justify-content-between">
+            <span><i class="bi bi-calendar-check me-1"></i>Date</span>
+            <span style="color:var(--text);">{{ event.date|date:"M d, Y" }}</span>
+          </div>
+        </div>
+
+        <hr>
+
+        {% if user.is_authenticated %}
+
+          {% if user_is_registered %}
+            <div class="alert alert-success text-center mb-3" style="font-size:.875rem;">
+              <i class="bi bi-check-circle-fill me-1"></i>You're registered!
+            </div>
+            {% if user_registration %}
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1rem;text-align:center;">
+                <div style="color:var(--muted);font-size:.75rem;margin-bottom:.25rem;">Your Check-In Code</div>
+                <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:3px;color:var(--brand);">
+                  {{ user_registration.check_in_code }}
+                </div>
+                <div style="color:var(--muted);font-size:.72rem;margin-top:.25rem;">Show this at the door</div>
+              </div>
+            {% endif %}
+            <a href="{% url 'my_tickets' %}" class="btn btn-outline-brand w-100">View My Tickets</a>
+
+          {% elif event.is_full %}
+            {% if user_on_waitlist %}
+              <div style="background:rgba(255,190,11,.1);border:1px solid rgba(255,190,11,.3);border-radius:10px;padding:1rem;text-align:center;margin-bottom:1rem;">
+                <i class="bi bi-clock-history" style="color:#FFBE0B;font-size:1.25rem;"></i>
+                <div style="font-weight:600;margin-top:.25rem;">You're on the waitlist</div>
+                <div style="color:var(--muted);font-size:.8rem;">Position #{{ waitlist_position }}</div>
+              </div>
+              <form method="POST" action="{% url 'leave_waitlist' event.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn w-100"
+                  style="background:rgba(255,77,109,.1);color:var(--brand);border:1px solid rgba(255,77,109,.3);border-radius:50px;padding:.65rem;">
+                  Leave Waitlist
+                </button>
+              </form>
+            {% else %}
+              <button disabled class="btn w-100 mb-2"
+                style="background:var(--surface);color:var(--muted);border-radius:50px;padding:.75rem;">
+                Sold Out
+              </button>
+              <a href="{% url 'join_waitlist' event.pk %}" class="btn btn-outline-brand w-100" style="padding:.75rem;">
+                <i class="bi bi-clock-history me-1"></i>Join Waitlist ({{ event.waitlist.count }} ahead)
+              </a>
+            {% endif %}
+
+          {% else %}
+            {% if event.price == 0 %}
+              <a href="{% url 'event_register' event.pk %}" class="btn btn-brand w-100" style="padding:.8rem;">
+                <i class="bi bi-ticket me-1"></i>Register Free
+              </a>
+            {% else %}
+              <a href="{% url 'payment_page' event_pk=event.pk %}" class="btn btn-brand w-100"
+                 style="padding:.8rem;background:linear-gradient(135deg,#00963A,#007A30);">
+                <i class="bi bi-phone me-1"></i>Pay KES {{ event.price }}
+              </a>
+            {% endif %}
+          {% endif %}
+
+          {% if user == event.organizer %}
+            <hr>
+            <div class="d-flex gap-2 mt-3">
+              <a href="{% url 'event_edit' event.pk %}" class="btn btn-outline-brand btn-sm flex-fill">
+                <i class="bi bi-pencil me-1"></i>Edit
+              </a>
+              <a href="{% url 'event_delete' event.pk %}" class="btn btn-sm flex-fill"
+                 style="background:rgba(255,77,109,.1);color:var(--brand);border:1px solid rgba(255,77,109,.3);border-radius:50px;">
+                <i class="bi bi-trash me-1"></i>Delete
+              </a>
+            </div>
+            <a href="{% url 'checkin_dashboard' event.pk %}" class="btn btn-brand w-100 mt-2" style="padding:.65rem;">
+              <i class="bi bi-qr-code-scan me-1"></i>Check-In Dashboard
+            </a>
+          {% endif %}
+
+        {% else %}
+          <p style="color:var(--muted);font-size:.875rem;text-align:center;margin-bottom:1rem;">
+            Sign in to register for this event
+          </p>
+          <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-brand w-100">
+            Log in to Register
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Star rating JS -->
+<script>
+const stars = document.querySelectorAll('.star');
+stars.forEach((star, idx) => {
+  star.addEventListener('mouseenter', () => {
+    stars.forEach((s, i) => s.style.color = i <= idx ? '#FFBE0B' : 'var(--border)');
+  });
+  star.addEventListener('click', () => {
+    star.closest('label').querySelector('input').checked = true;
+    stars.forEach((s, i) => s.style.color = i <= idx ? '#FFBE0B' : 'var(--border)');
+  });
+});
+document.getElementById('star-picker')?.addEventListener('mouseleave', () => {
+  const val = document.querySelector('input[name="rating"]:checked')?.value || 0;
+  stars.forEach((s, i) => s.style.color = i < val ? '#FFBE0B' : 'var(--border)');
+});
+</script>
+{% endblock %}

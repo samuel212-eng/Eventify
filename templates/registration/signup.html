@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Sign Up — Eventify{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+  <div style="text-align:center; margin-bottom:2rem;">
+    <a href="{% url 'home' %}" style="font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; color:var(--brand);">⚡ Eventify</a>
+    <h2 style="margin-top:1rem; font-size:1.5rem;">Create your account</h2>
+    <p style="color:var(--muted); font-size:.9rem;">Free forever. No credit card needed.</p>
+  </div>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ field.id_for_label }}">
+          {{ field.label }}
+          {% if field.field.required %}<span style="color:var(--brand);">*</span>{% endif %}
+        </label>
+        {{ field }}
+        {% if field.help_text %}
+          <div style="color:var(--muted); font-size:.78rem; margin-top:.3rem;">{{ field.help_text }}</div>
+        {% endif %}
+        {% if field.errors %}
+          <div style="color:var(--brand); font-size:.85rem; margin-top:.3rem;">{{ field.errors|join:", " }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-brand w-100 mt-2" style="padding:.75rem;">
+      Create Account
+    </button>
+  </form>
+
+  <p style="text-align:center; color:var(--muted); margin-top:1.5rem; font-size:.9rem;">
+    Already have an account? <a href="{% url 'login' %}">Log in</a>
+  </p>
+</div>
+
+<!-- Dark theme for form widgets -->
+<style>
+  input, select { width:100%; background:var(--surface)!important; border:1px solid var(--border)!important; color:var(--text)!important; border-radius:10px; padding:.65rem 1rem; }
+  input:focus, select:focus { border-color:var(--brand)!important; box-shadow:0 0 0 3px rgba(255,77,109,.15)!important; outline:none; }
+</style>
+{% endblock %}

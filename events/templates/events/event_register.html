@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Register for {{ event.title }} — Eventify{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row g-5 justify-content-center">
+
+    <!-- Form -->
+    <div class="col-md-6">
+      <h1 style="font-size:1.8rem; margin-bottom:.5rem;">Register for Event</h1>
+      <p style="color:var(--muted); margin-bottom:2rem;">
+        Complete your registration for <strong style="color:var(--text);">{{ event.title }}</strong>
+      </p>
+
+      <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:2rem;">
+        <form method="POST">
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}
+                <div style="color:var(--brand); font-size:.85rem;">{{ field.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-brand w-100 mt-2" style="padding:.75rem;">
+            <i class="bi bi-ticket me-1"></i> Confirm Registration
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Event summary -->
+    <div class="col-md-4">
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem;">
+        <h5 style="margin-bottom:1rem;">Event Summary</h5>
+        {% if event.image %}
+          <img src="{{ event.image.url }}" style="width:100%; height:140px; object-fit:cover; border-radius:10px; margin-bottom:1rem;">
+        {% endif %}
+        <div style="font-weight:600; margin-bottom:.75rem;">{{ event.title }}</div>
+        <div style="color:var(--muted); font-size:.875rem; line-height:2;">
+          <div><i class="bi bi-calendar3 me-1" style="color:var(--brand);"></i>{{ event.date|date:"M d, Y · g:i A" }}</div>
+          <div><i class="bi bi-geo-alt me-1"   style="color:var(--brand);"></i>{{ event.location }}</div>
+          <div><i class="bi bi-tag me-1"        style="color:var(--brand);"></i>
+            {% if event.price == 0 %}Free{% else %}${{ event.price }}{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  input, textarea { width:100%; background:var(--surface)!important; border:1px solid var(--border)!important; color:var(--text)!important; border-radius:10px; padding:.65rem 1rem; }
+  input:focus, textarea:focus { border-color:var(--brand)!important; box-shadow:0 0 0 3px rgba(255,77,109,.15)!important; }
+</style>
+{% endblock %}

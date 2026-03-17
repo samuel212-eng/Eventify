@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Verification Queue — Admin{% endblock %}
+{% block content %}
+<div class="container my-5">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 style="font-size:1.8rem;">🛡️ Admin — Verification Queue</h1>
+    <a href="{% url 'admin_event_approval_queue' %}" class="btn btn-outline-brand btn-sm">
+      Event Approvals
+    </a>
+  </div>
+
+  <!-- PENDING APPLICATIONS -->
+  <h4 style="margin-bottom:1rem; color:var(--brand);">
+    Pending Applications
+    <span style="font-size:.9rem; color:var(--muted);">({{ pending|length }})</span>
+  </h4>
+
+  {% if pending %}
+    <div class="row g-3 mb-5">
+      {% for profile in pending %}
+        <div class="col-md-6">
+          <div style="background:var(--card-bg); border:1px solid rgba(255,190,11,.3); border-radius:var(--radius); padding:1.25rem;">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <div style="font-weight:600;">{{ profile.user.username }}</div>
+                <div style="color:var(--muted); font-size:.8rem;">{{ profile.user.email }}</div>
+              </div>
+              <span class="tag" style="background:rgba(255,190,11,.15); color:#FFBE0B;">Pending</span>
+            </div>
+            <div style="color:var(--muted); font-size:.8rem; margin-bottom:1rem; line-height:1.8;">
+              <div>📱 {{ profile.phone_number }}</div>
+              <div>🪪 ID: {{ profile.id_number }}</div>
+              {% if profile.organization_name %}
+                <div>🏢 {{ profile.organization_name }}</div>
+              {% endif %}
+              <div>📅 Applied {{ profile.submitted_at|date:"M d, Y" }}</div>
+            </div>
+            <div class="d-flex gap-2">
+              <a href="{% url 'admin_review_organiser' profile.pk %}" class="btn btn-brand btn-sm">
+                Review
+              </a>
+              {% if profile.id_document %}
+                <a href="{{ profile.id_document.url }}" target="_blank" class="btn btn-outline-brand btn-sm">
+                  View ID
+                </a>
+              {% endif %}
+              {% if profile.selfie_with_id %}
+                <a href="{{ profile.selfie_with_id.url }}" target="_blank" class="btn btn-outline-brand btn-sm">
+                  Selfie
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p style="color:var(--muted); margin-bottom:3rem;">No pending applications. ✅</p>
+  {% endif %}
+
+  <!-- SUSPENDED -->
+  {% if suspended %}
+    <h4 style="margin-bottom:1rem; color:#FF6B6B;">Suspended Organisers</h4>
+    <div class="row g-3 mb-5">
+      {% for profile in suspended %}
+        <div class="col-md-6">
+          <div style="background:var(--card-bg); border:1px solid rgba(255,77,109,.3); border-radius:var(--radius); padding:1.25rem;">
+            <div style="font-weight:600;">{{ profile.user.username }}</div>
+            <div style="color:var(--muted); font-size:.8rem; margin:.5rem 0;">{{ profile.rejection_reason }}</div>
+            <a href="{% url 'admin_review_organiser' profile.pk %}" class="btn btn-outline-brand btn-sm">Manage</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

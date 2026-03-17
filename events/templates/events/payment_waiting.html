@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Waiting for Payment — Eventify{% endblock %}
+
+{% block content %}
+<div class="container my-5" style="max-width:480px; text-align:center;">
+
+  <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:3rem 2rem;">
+
+    <!-- Animated spinner -->
+    <div id="spinner" style="margin-bottom:1.5rem;">
+      <div style="
+        width:70px; height:70px; border-radius:50%;
+        border:4px solid var(--border);
+        border-top-color:#00963A;
+        animation:spin 1s linear infinite;
+        margin:0 auto;
+      "></div>
+    </div>
+
+    <div id="icon-success" style="display:none; font-size:4rem; margin-bottom:1rem;">✅</div>
+    <div id="icon-fail"    style="display:none; font-size:4rem; margin-bottom:1rem;">❌</div>
+
+    <h2 id="status-title" style="font-size:1.5rem; margin-bottom:.75rem;">
+      Waiting for payment...
+    </h2>
+    <p id="status-message" style="color:var(--muted); margin-bottom:1.5rem;">
+      Check your phone. Enter your M-Pesa PIN to complete the payment.
+    </p>
+
+    <!-- Receipt number (shown after success) -->
+    <div id="receipt-box" style="display:none;
+      background:rgba(0,150,57,0.1); border:1px solid rgba(0,150,57,0.3);
+      border-radius:12px; padding:1rem; margin-bottom:1.5rem;
+    ">
+      <div style="color:var(--muted); font-size:.8rem; margin-bottom:.25rem;">M-Pesa Receipt</div>
+      <div id="receipt-number" style="font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:700; color:#19C878;"></div>
+    </div>
+
+    <div id="action-buttons" style="display:none;">
+      <a href="{% url 'my_tickets' %}" class="btn btn-brand w-100" style="margin-bottom:.75rem;">
+        View My Tickets
+      </a>
+      <a href="{% url 'event_list' %}" style="color:var(--muted); font-size:.875rem;">
+        Browse more events
+      </a>
+    </div>
+
+    <div id="retry-button" style="display:none;">
+      <a href="{% url 'payment_page' event_pk=payment.registration.event.pk %}" class="btn btn-outline-brand">
+        Try Again
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+// =============================================
+//  Poll the server every 5 seconds to check
+//  if Safaricom has confirmed the payment.
+// =============================================
+
+const CHECK_URL  = "{% url 'check_payment_status' payment.pk %}";
+const MAX_CHECKS = 24;   // 24 × 5 seconds = 2 minutes max wait
+let   checkCount = 0;
+
+function checkStatus() {
+  fetch(CHECK_URL)
+    .then(res => res.json())
+    .then(data => {
+
+      checkCount++;
+
+      if (data.status === 'completed') {
+        // Payment went through!
+        document.getElementById('spinner').style.display      = 'none';
+        document.getElementById('icon-success').style.display = 'block';
+        document.getElementById('status-title').textContent   = 'Payment Successful! 🎉';
+        document.getElementById('status-message').textContent = 'You are now registered for the event.';
+        document.getElementById('receipt-number').textContent = data.receipt;
+        document.getElementById('receipt-box').style.display  = 'block';
+        document.getElementById('action-buttons').style.display = 'block';
+        return;  // Stop polling
+      }
+
+      if (data.status === 'failed') {
+        // Payment failed
+        document.getElementById('spinner').style.display     = 'none';
+        document.getElementById('icon-fail').style.display   = 'block';
+        document.getElementById('status-title').textContent  = 'Payment Failed';
+        document.getElementById('status-message').textContent = data.description || 'The payment was not completed.';
+        document.getElementById('retry-button').style.display = 'block';
+        return;  // Stop polling
+      }
+
+      // Still pending — check again in 5 seconds (unless we've waited too long)
+      if (checkCount < MAX_CHECKS) {
+        setTimeout(checkStatus, 5000);
+      } else {
+        document.getElementById('status-title').textContent   = 'Taking longer than expected...';
+        document.getElementById('status-message').textContent = 'Check your M-Pesa messages. If you were charged, contact support.';
+      }
+    })
+    .catch(() => {
+      // Network error — try again
+      if (checkCount < MAX_CHECKS) setTimeout(checkStatus, 5000);
+    });
+}
+
+// Start checking after 5 seconds (give Safaricom time to respond)
+setTimeout(checkStatus, 5000);
+</script>
+
+{% endblock %}

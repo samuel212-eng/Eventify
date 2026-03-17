@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Cancel Registration — Eventify{% endblock %}
+
+{% block content %}
+<div class="container my-5" style="max-width:480px;">
+  <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:2.5rem; text-align:center;">
+    <div style="font-size:3rem; margin-bottom:1rem;">⚠️</div>
+    <h2 style="margin-bottom:.75rem;">Cancel Registration?</h2>
+    <p style="color:var(--muted); margin-bottom:2rem;">
+      Are you sure you want to cancel your spot at
+      <strong style="color:var(--text);">{{ registration.event.title }}</strong>?
+    </p>
+    <form method="POST" class="d-flex gap-3 justify-content-center">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-brand btn-sm" style="padding:.65rem 1.8rem;">
+        Yes, Cancel
+      </button>
+      <a href="{% url 'my_tickets' %}" class="btn btn-outline-brand btn-sm">Keep my spot</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

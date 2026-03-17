@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Eventify — Discover Amazing Events{% endblock %}
+
+{% block content %}
+
+<!-- ========== HERO SECTION ========== -->
+<section style="
+  background: radial-gradient(ellipse at top left, #3D0020 0%, #0D0D0D 55%);
+  padding: 6rem 0 5rem;
+  position: relative;
+  overflow: hidden;
+">
+  <!-- Background decoration -->
+  <div style="
+    position:absolute; top:-100px; right:-100px;
+    width:500px; height:500px; border-radius:50%;
+    background: radial-gradient(circle, rgba(255,77,109,0.08) 0%, transparent 70%);
+    pointer-events:none;
+  "></div>
+
+  <div class="container text-center" style="position:relative; z-index:1;">
+    <div class="tag mb-4">🎉 The #1 Event Platform</div>
+    <h1 style="font-size:clamp(2.5rem,6vw,4.5rem); line-height:1.1; margin-bottom:1.5rem;">
+      Discover events that<br>
+      <span style="color:var(--brand)">move you.</span>
+    </h1>
+    <p style="color:var(--muted); font-size:1.2rem; max-width:520px; margin:0 auto 2.5rem;">
+      Browse concerts, workshops, meetups and more. Create your own and sell tickets — all in one place.
+    </p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <a href="{% url 'event_list' %}" class="btn btn-brand" style="padding:.8rem 2.2rem; font-size:1.05rem;">
+        Browse Events <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+      {% if not user.is_authenticated %}
+        <a href="{% url 'signup' %}" class="btn btn-outline-brand" style="padding:.8rem 2.2rem; font-size:1.05rem;">
+          Host an Event
+        </a>
+      {% else %}
+        <a href="{% url 'event_create' %}" class="btn btn-outline-brand" style="padding:.8rem 2.2rem; font-size:1.05rem;">
+          + Create Event
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- ========== STATS ========== -->
+<section class="container my-5">
+  <div class="row g-4 text-center">
+    <div class="col-6 col-md-3">
+      <div class="stat-box">
+        <div class="stat-number">{{ total_events }}+</div>
+        <div style="color:var(--muted); font-size:.875rem;">Live Events</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-box">
+        <div class="stat-number">10K+</div>
+        <div style="color:var(--muted); font-size:.875rem;">Happy Attendees</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-box">
+        <div class="stat-number">50+</div>
+        <div style="color:var(--muted); font-size:.875rem;">Cities</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-box">
+        <div class="stat-number">100%</div>
+        <div style="color:var(--muted); font-size:.875rem;">Satisfaction</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== UPCOMING EVENTS ========== -->
+<section class="container mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 style="font-size:1.75rem;">Upcoming Events</h2>
+    <a href="{% url 'event_list' %}" style="color:var(--brand); font-weight:500;">
+      View all <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+
+  {% if upcoming_events %}
+    <div class="row g-4">
+      {% for event in upcoming_events %}
+        <div class="col-md-6 col-lg-4">
+          <a href="{% url 'event_detail' event.pk %}" style="text-decoration:none; color:inherit;">
+            <div class="event-card">
+              {% if event.image %}
+                <img src="{{ event.image.url }}" alt="{{ event.title }}">
+              {% else %}
+                <div class="img-placeholder"><i class="bi bi-calendar-event"></i></div>
+              {% endif %}
+              <div class="card-body">
+                {% if event.category %}
+                  <div class="tag mb-2">{{ event.category.name }}</div>
+                {% endif %}
+                <h5 class="card-title">{{ event.title }}</h5>
+                <p style="color:var(--muted); font-size:.875rem; margin-bottom:.75rem;">
+                  <i class="bi bi-calendar3 me-1"></i>{{ event.date|date:"M d, Y · g:i A" }}
+                </p>
+                <p style="color:var(--muted); font-size:.875rem; margin-bottom:1rem;">
+                  <i class="bi bi-geo-alt me-1"></i>{{ event.location }}
+                </p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="price-tag">
+                    {% if event.price == 0 %}Free{% else %}${{ event.price }}{% endif %}
+                  </span>
+                  <span style="color:var(--muted); font-size:.8rem;">
+                    {{ event.spots_left }} spots left
+                  </span>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5" style="color:var(--muted);">
+      <i class="bi bi-calendar-x" style="font-size:3rem; display:block; margin-bottom:1rem;"></i>
+      No events yet. <a href="{% url 'event_create' %}">Be the first to create one!</a>
+    </div>
+  {% endif %}
+</section>
+
+<!-- ========== CATEGORIES ========== -->
+{% if categories %}
+<section class="container mb-5">
+  <h2 style="font-size:1.75rem; margin-bottom:1.5rem;">Browse by Category</h2>
+  <div class="d-flex flex-wrap gap-3">
+    {% for cat in categories %}
+      <a href="{% url 'event_list' %}?category={{ cat.id }}"
+         class="btn btn-outline-brand">
+        {{ cat.name }}
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ========== CTA BANNER ========== -->
+{% if not user.is_authenticated %}
+<section class="container mb-5">
+  <div style="
+    background: linear-gradient(135deg, #3D0020, #1A0010);
+    border: 1px solid rgba(255,77,109,0.3);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    text-align: center;
+  ">
+    <h2 style="font-size:2rem; margin-bottom:1rem;">Ready to host your event?</h2>
+    <p style="color:var(--muted); margin-bottom:2rem;">
+      Join thousands of organisers on Eventify. It's free to sign up.
+    </p>
+    <a href="{% url 'signup' %}" class="btn btn-brand" style="padding:.8rem 2.5rem; font-size:1.05rem;">
+      Get Started Free
+    </a>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}

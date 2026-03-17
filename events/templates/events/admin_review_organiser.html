@@ -1,0 +1,77 @@
+<!-- admin_review_organiser.html -->
+{% extends "base.html" %}
+{% block title %}Review: {{ profile.user.username }} — Admin{% endblock %}
+{% block content %}
+<div class="container my-5" style="max-width:700px;">
+
+  <a href="{% url 'admin_verification_queue' %}" style="color:var(--muted); font-size:.875rem;">
+    ← Back to queue
+  </a>
+
+  <h2 style="margin:1.5rem 0 .5rem;">Review: {{ profile.user.username }}</h2>
+  <p style="color:var(--muted); margin-bottom:2rem;">{{ profile.user.email }} · Applied {{ profile.submitted_at|date:"M d, Y g:i A" }}</p>
+
+  <!-- Submitted info -->
+  <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem; margin-bottom:2rem;">
+    <div class="row g-3" style="font-size:.9rem;">
+      <div class="col-md-6"><span style="color:var(--muted);">Phone:</span> {{ profile.phone_number }}</div>
+      <div class="col-md-6"><span style="color:var(--muted);">ID Number:</span> {{ profile.id_number }}</div>
+      <div class="col-md-6"><span style="color:var(--muted);">Organisation:</span> {{ profile.organization_name|default:"—" }}</div>
+      <div class="col-md-6"><span style="color:var(--muted);">Website:</span>
+        {% if profile.website %}<a href="{{ profile.website }}" target="_blank">{{ profile.website }}</a>{% else %}—{% endif %}
+      </div>
+      <div class="col-md-6"><span style="color:var(--muted);">M-Pesa Payout:</span> {{ profile.mpesa_number }}</div>
+      <div class="col-md-6"><span style="color:var(--muted);">Social:</span> {{ profile.social_media|default:"—" }}</div>
+      {% if profile.bio %}
+        <div class="col-12"><span style="color:var(--muted);">Bio:</span> {{ profile.bio }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Documents -->
+    <div class="d-flex gap-3 mt-3">
+      {% if profile.id_document %}
+        <div>
+          <div style="color:var(--muted); font-size:.75rem; margin-bottom:.5rem;">ID Document</div>
+          <a href="{{ profile.id_document.url }}" target="_blank">
+            <img src="{{ profile.id_document.url }}" style="width:160px; height:100px; object-fit:cover; border-radius:10px; border:1px solid var(--border);">
+          </a>
+        </div>
+      {% endif %}
+      {% if profile.selfie_with_id %}
+        <div>
+          <div style="color:var(--muted); font-size:.75rem; margin-bottom:.5rem;">Selfie with ID</div>
+          <a href="{{ profile.selfie_with_id.url }}" target="_blank">
+            <img src="{{ profile.selfie_with_id.url }}" style="width:160px; height:100px; object-fit:cover; border-radius:10px; border:1px solid var(--border);">
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Action form -->
+  <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem;">
+    <h5 style="margin-bottom:1.25rem;">Make a Decision</h5>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Reason (required for reject / suspend)</label>
+        <textarea name="reason" rows="3" style="width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:.65rem 1rem;"
+                  placeholder="e.g. ID photo is blurry, please resubmit"></textarea>
+      </div>
+      <div class="d-flex gap-3 flex-wrap">
+        <button type="submit" name="action" value="approve" class="btn btn-brand">
+          ✅ Approve
+        </button>
+        <button type="submit" name="action" value="reject"
+                style="background:rgba(255,190,11,.15); color:#FFBE0B; border:1px solid rgba(255,190,11,.3); border-radius:50px; padding:.6rem 1.5rem; font-weight:600;">
+          ❌ Reject
+        </button>
+        <button type="submit" name="action" value="suspend"
+                style="background:rgba(255,77,109,.1); color:var(--brand); border:1px solid rgba(255,77,109,.3); border-radius:50px; padding:.6rem 1.5rem; font-weight:600;">
+          🚫 Suspend Account
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

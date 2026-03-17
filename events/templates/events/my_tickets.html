@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}My Tickets — Eventify{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <h1 style="font-size:2rem;">🎟️ My Tickets</h1>
+    <p style="color:var(--muted);">Events you're registered for</p>
+  </div>
+</div>
+
+<div class="container mt-5 mb-5">
+  {% if registrations %}
+    <div class="row g-4">
+      {% for reg in registrations %}
+        <div class="col-md-6 col-lg-4">
+          <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; height:100%;">
+            <div class="tag mb-2">{{ reg.event.category.name|default:"Event" }}</div>
+            <h5 style="font-family:'Syne',sans-serif; margin-bottom:.75rem;">
+              <a href="{% url 'event_detail' reg.event.pk %}" style="color:var(--text);">{{ reg.event.title }}</a>
+            </h5>
+            <div style="color:var(--muted); font-size:.875rem; line-height:2; margin-bottom:1rem;">
+              <div><i class="bi bi-calendar3 me-1" style="color:var(--brand);"></i>{{ reg.event.date|date:"M d, Y · g:i A" }}</div>
+              <div><i class="bi bi-geo-alt me-1"   style="color:var(--brand);"></i>{{ reg.event.location }}</div>
+              <div><i class="bi bi-clock me-1"     style="color:var(--brand);"></i>Registered {{ reg.registered_at|date:"M d, Y" }}</div>
+            </div>
+            <div class="d-flex gap-2">
+              <a href="{% url 'event_detail' reg.event.pk %}" class="btn btn-outline-brand btn-sm">View Event</a>
+              <a href="{% url 'cancel_registration' reg.pk %}"
+                 style="color:var(--muted); font-size:.8rem; align-self:center; margin-left:.5rem;">
+                Cancel
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5" style="color:var(--muted);">
+      <i class="bi bi-ticket" style="font-size:3.5rem; display:block; margin-bottom:1rem; opacity:.4;"></i>
+      <p style="margin-bottom:1.5rem;">You haven't registered for any events yet.</p>
+      <a href="{% url 'event_list' %}" class="btn btn-brand">Browse Events</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

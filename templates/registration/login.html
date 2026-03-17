@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Log In — Eventify{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+  <div style="text-align:center; margin-bottom:2rem;">
+    <a href="{% url 'home' %}" style="font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; color:var(--brand);">⚡ Eventify</a>
+    <h2 style="margin-top:1rem; font-size:1.5rem;">Welcome back</h2>
+    <p style="color:var(--muted); font-size:.9rem;">Log in to manage events &amp; tickets</p>
+  </div>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="mb-3">
+      <label class="form-label">Username</label>
+      <input type="text" name="username" class="form-control" autofocus placeholder="your_username">
+      {% if form.username.errors %}
+        <div style="color:var(--brand); font-size:.85rem;">{{ form.username.errors|join:", " }}</div>
+      {% endif %}
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label">Password</label>
+      <input type="password" name="password" class="form-control" placeholder="••••••••">
+    </div>
+
+    <!-- next keeps the redirect working (e.g. after clicking "register") -->
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+    <button type="submit" class="btn btn-brand w-100" style="padding:.75rem;">
+      Log In
+    </button>
+  </form>
+
+  <p style="text-align:center; color:var(--muted); margin-top:1.5rem; font-size:.9rem;">
+    Don't have an account? <a href="{% url 'signup' %}">Sign up free</a>
+  </p>
+</div>
+{% endblock %}

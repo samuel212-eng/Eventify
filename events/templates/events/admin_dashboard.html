@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — Eventify{% endblock %}
+
+{% block content %}
+<div class="container my-5" style="max-width:1300px;">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
+    <div>
+      <h1 style="font-size:2rem;margin-bottom:.25rem;">📊 Admin Dashboard</h1>
+      <p style="color:var(--muted);">Live overview of Eventify</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'admin_verification_queue' %}" class="btn btn-outline-brand btn-sm">Verifications</a>
+      <a href="/admin/" class="btn btn-brand btn-sm">Django Admin</a>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="row g-4 mb-5">
+    <div class="col-6 col-xl-3">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;border-left:3px solid var(--brand);">
+        <div style="font-size:1.75rem;margin-bottom:.25rem;">🎪</div>
+        <div style="font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--brand);line-height:1.1;">{{ total_events }}</div>
+        <div style="color:var(--muted);font-size:.85rem;margin-top:.25rem;">Total Events</div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;border-left:3px solid #3A86FF;">
+        <div style="font-size:1.75rem;margin-bottom:.25rem;">🎟️</div>
+        <div style="font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:#3A86FF;line-height:1.1;">{{ total_registrations }}</div>
+        <div style="color:var(--muted);font-size:.85rem;margin-top:.25rem;">Registrations</div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;border-left:3px solid #19C878;">
+        <div style="font-size:1.75rem;margin-bottom:.25rem;">👥</div>
+        <div style="font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:#19C878;line-height:1.1;">{{ total_users }}</div>
+        <div style="color:var(--muted);font-size:.85rem;margin-top:.25rem;">Unique Attendees</div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;border-left:3px solid #FFBE0B;">
+        <div style="font-size:1.75rem;margin-bottom:.25rem;">💰</div>
+        <div style="font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:#FFBE0B;line-height:1.1;">{{ total_revenue|floatformat:0 }}</div>
+        <div style="color:var(--muted);font-size:.85rem;margin-top:.25rem;">KES Revenue</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="row g-4 mb-5">
+    <div class="col-lg-8">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;">
+        <h5 style="font-family:'Syne',sans-serif;margin-bottom:1.5rem;">Most Popular Events</h5>
+        <div style="position:relative;height:280px;">
+          <canvas id="topEventsChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;">
+        <h5 style="font-family:'Syne',sans-serif;margin-bottom:1.5rem;">Events by Category</h5>
+        <div style="position:relative;height:280px;">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tables -->
+  <div class="row g-4">
+    <!-- Recent registrations -->
+    <div class="col-lg-5">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;">
+        <h5 style="font-family:'Syne',sans-serif;margin-bottom:1.25rem;">Recent Registrations</h5>
+        {% for reg in recent_registrations %}
+          <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem 0;border-bottom:1px solid var(--border);">
+            <div style="width:36px;height:36px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0;">
+              {{ reg.user.username|first|upper }}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:.875rem;font-weight:500;">{{ reg.user.username }}</div>
+              <div style="color:var(--muted);font-size:.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ reg.event.title }}</div>
+            </div>
+            <div style="color:var(--muted);font-size:.75rem;flex-shrink:0;">{{ reg.registered_at|date:"M d" }}</div>
+          </div>
+        {% empty %}
+          <p style="color:var(--muted);font-size:.875rem;">No registrations yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Events table -->
+    <div class="col-lg-7">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;overflow-x:auto;">
+        <h5 style="font-family:'Syne',sans-serif;margin-bottom:1.25rem;">All Events</h5>
+        <table style="width:100%;border-collapse:collapse;font-size:.85rem;">
+          <thead>
+            <tr style="color:var(--muted);border-bottom:1px solid var(--border);">
+              <th style="text-align:left;padding:.5rem .75rem;font-weight:500;">Event</th>
+              <th style="text-align:center;padding:.5rem .75rem;font-weight:500;">Regs</th>
+              <th style="text-align:center;padding:.5rem .75rem;font-weight:500;">Price</th>
+              <th style="text-align:center;padding:.5rem .75rem;font-weight:500;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for event in all_events %}
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:.6rem .75rem;">
+                  <a href="{% url 'event_detail' event.pk %}" style="color:var(--text);">{{ event.title|truncatechars:30 }}</a>
+                  <div style="color:var(--muted);font-size:.75rem;">{{ event.organizer.username }}</div>
+                </td>
+                <td style="text-align:center;padding:.6rem .75rem;">
+                  <strong>{{ event.reg_count }}</strong><span style="color:var(--muted);">/{{ event.capacity }}</span>
+                </td>
+                <td style="text-align:center;padding:.6rem .75rem;color:var(--brand);font-weight:600;">
+                  {% if event.price == 0 %}Free{% else %}KES {{ event.price|floatformat:0 }}{% endif %}
+                </td>
+                <td style="text-align:center;padding:.6rem .75rem;">
+                  {% if event.is_published %}
+                    <span style="background:rgba(25,200,120,.15);color:#19C878;font-size:.72rem;padding:.2rem .6rem;border-radius:50px;font-weight:600;">Live</span>
+                  {% else %}
+                    <span style="background:rgba(255,190,11,.15);color:#FFBE0B;font-size:.72rem;padding:.2rem .6rem;border-radius:50px;font-weight:600;">Draft</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const palette = ['#FF4D6D','#3A86FF','#FFD166','#06D6A0','#8338EC','#FF6B35','#118AB2','#FB5607'];
+
+// Pass data from Django template to JS
+const topLabels = {{ top_event_labels|safe }};
+const topCounts = {{ top_event_counts|safe }};
+const catLabels = {{ category_labels|safe }};
+const catCounts = {{ category_counts|safe }};
+
+new Chart(document.getElementById('topEventsChart'), {
+  type: 'bar',
+  data: {
+    labels: topLabels,
+    datasets: [{
+      label: 'Registrations',
+      data: topCounts,
+      backgroundColor: palette.map(c => c + 'BB'),
+      borderColor: palette,
+      borderWidth: 1.5,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: '#2A2A2A' }, ticks: { color: '#888', font: { size: 11 } } },
+      y: { grid: { color: '#2A2A2A' }, ticks: { color: '#888' }, beginAtZero: true },
+    }
+  }
+});
+
+new Chart(document.getElementById('categoryChart'), {
+  type: 'doughnut',
+  data: {
+    labels: catLabels,
+    datasets: [{
+      data: catCounts,
+      backgroundColor: palette.map(c => c + 'BB'),
+      borderColor: '#161616',
+      borderWidth: 3,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { color: '#888', padding: 12, font: { size: 11 } } } },
+    cutout: '65%',
+  }
+});
+</script>
+{% endblock %}
