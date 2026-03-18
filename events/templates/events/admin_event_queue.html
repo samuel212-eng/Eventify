@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}Event Approval Queue — Admin{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h1 style="font-size:1.8rem; margin-bottom:.25rem;">📋 Event Approval Queue</h1>
+      <p style="color:var(--muted);">Review paid events before they go live</p>
+    </div>
+    <a href="{% url 'admin_verification_queue' %}" class="btn btn-outline-brand btn-sm">
+      ← Organiser Verifications
+    </a>
+  </div>
+
+  <!-- ── PENDING EVENTS ── -->
+  <h4 style="margin-bottom:1rem; color:var(--brand);">
+    Awaiting Approval
+    <span style="font-size:.85rem; color:var(--muted);">({{ pending_events|length }})</span>
+  </h4>
+
+  {% if pending_events %}
+    <div class="row g-3 mb-5">
+      {% for approval in pending_events %}
+        <div class="col-12">
+          <div style="
+            background:var(--card-bg); border:1px solid rgba(255,190,11,.3);
+            border-radius:var(--radius); padding:1.5rem;
+            display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;
+          ">
+            <!-- Event image or placeholder -->
+            {% if approval.event.image %}
+              <img src="{{ approval.event.image.url }}"
+                   style="width:90px; height:60px; object-fit:cover; border-radius:8px; flex-shrink:0;">
+            {% else %}
+              <div style="width:90px; height:60px; border-radius:8px; background:var(--surface);
+                          display:flex; align-items:center; justify-content:center;
+                          color:var(--muted); font-size:1.5rem; flex-shrink:0;">
+                🎪
+              </div>
+            {% endif %}
+
+            <!-- Event info -->
+            <div style="flex:1; min-width:200px;">
+              <div style="font-family:'Syne',sans-serif; font-weight:700; font-size:1.05rem; margin-bottom:.25rem;">
+                {{ approval.event.title }}
+              </div>
+              <div style="color:var(--muted); font-size:.85rem; line-height:1.8;">
+                <span class="me-3">
+                  <i class="bi bi-person me-1" style="color:var(--brand);"></i>
+                  {{ approval.event.organizer.username }}
+                </span>
+                <span class="me-3">
+                  <i class="bi bi-calendar3 me-1" style="color:var(--brand);"></i>
+                  {{ approval.event.date|date:"M d, Y" }}
+                </span>
+                <span class="me-3">
+                  <i class="bi bi-geo-alt me-1" style="color:var(--brand);"></i>
+                  {{ approval.event.location }}
+                </span>
+                <span>
+                  <i class="bi bi-tag me-1" style="color:var(--brand);"></i>
+                  KES {{ approval.event.price }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Submitted date -->
+            <div style="text-align:center; flex-shrink:0;">
+              <div style="color:var(--muted); font-size:.75rem;">Submitted</div>
+              <div style="font-size:.875rem;">{{ approval.submitted_at|date:"M d, Y" }}</div>
+            </div>
+
+            <!-- Status badge -->
+            <span style="
+              background:rgba(255,190,11,.15); color:#FFBE0B;
+              font-size:.72rem; font-weight:600; padding:.3rem .8rem;
+              border-radius:50px; flex-shrink:0;
+            ">⏳ Pending</span>
+
+            <!-- Actions -->
+            <div class="d-flex gap-2 flex-shrink-0">
+              <a href="{% url 'event_detail' approval.event.pk %}" target="_blank"
+                 class="btn btn-outline-brand btn-sm">
+                Preview
+              </a>
+              <a href="{% url 'admin_review_event' approval.pk %}" class="btn btn-brand btn-sm">
+                Review
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div style="
+      background:var(--card-bg); border:1px solid var(--border);
+      border-radius:var(--radius); padding:2.5rem; text-align:center;
+      margin-bottom:3rem; color:var(--muted);
+    ">
+      <div style="font-size:2.5rem; margin-bottom:.75rem;">✅</div>
+      <p>No events waiting for approval. You're all caught up!</p>
+    </div>
+  {% endif %}
+
+  <!-- ── REPORTS ── -->
+  <h4 style="margin-bottom:1rem; color:#FF6B6B;">
+    Flagged Events — User Reports
+    <span style="font-size:.85rem; color:var(--muted);">({{ reports|length }} unresolved)</span>
+  </h4>
+
+  {% if reports %}
+    <div class="row g-3">
+      {% for report in reports %}
+        <div class="col-md-6">
+          <div style="
+            background:var(--card-bg); border:1px solid rgba(255,77,109,.25);
+            border-radius:var(--radius); padding:1.25rem;
+          ">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div style="font-weight:600; font-size:.95rem;">
+                <a href="{% url 'event_detail' report.event.pk %}" style="color:var(--text);">
+                  {{ report.event.title }}
+                </a>
+              </div>
+              <span style="
+                background:rgba(255,77,109,.12); color:var(--brand);
+                font-size:.72rem; font-weight:600; padding:.2rem .65rem;
+                border-radius:50px; white-space:nowrap; margin-left:.5rem;
+              ">{{ report.get_reason_display }}</span>
+            </div>
+
+            <div style="color:var(--muted); font-size:.8rem; margin-bottom:.75rem; line-height:1.7;">
+              <div>
+                <i class="bi bi-flag me-1" style="color:var(--brand);"></i>
+                Reported by <strong style="color:var(--text);">{{ report.reported_by.username }}</strong>
+              </div>
+              <div>
+                <i class="bi bi-clock me-1" style="color:var(--brand);"></i>
+                {{ report.created_at|date:"M d, Y · g:i A" }}
+              </div>
+              {% if report.details %}
+                <div style="
+                  margin-top:.5rem; background:var(--surface);
+                  border-radius:8px; padding:.6rem .75rem;
+                  color:var(--text); font-size:.8rem; line-height:1.5;
+                ">
+                  "{{ report.details|truncatechars:120 }}"
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="d-flex gap-2">
+              <a href="{% url 'event_detail' report.event.pk %}" target="_blank"
+                 class="btn btn-outline-brand btn-sm">
+                View Event
+              </a>
+              <!-- Mark resolved form -->
+              <form method="POST" action="{% url 'resolve_report' report.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm"
+                  style="background:rgba(25,200,120,.12); color:#19C878;
+                         border:1px solid rgba(25,200,120,.3); border-radius:50px;
+                         padding:.3rem 1rem; font-size:.8rem; font-weight:600;">
+                  Mark Resolved
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div style="
+      background:var(--card-bg); border:1px solid var(--border);
+      border-radius:var(--radius); padding:2rem; text-align:center; color:var(--muted);
+    ">
+      <div style="font-size:2rem; margin-bottom:.5rem;">🏳️</div>
+      <p>No unresolved reports.</p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

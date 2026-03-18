@@ -21,7 +21,7 @@
   ">
     <h5 style="margin-bottom:1rem; font-family:'Syne',sans-serif;">Verified organisers get:</h5>
     <div class="row g-2">
-      {% for benefit in "A verified ✓ badge on all your events,Ability to create paid events,Higher search ranking,Faster support response,Attendee trust & more ticket sales"|split:"," %}
+      {% for benefit in benefits %}
         <div class="col-md-6" style="color:var(--muted); font-size:.9rem;">
           <i class="bi bi-check-circle-fill me-2" style="color:#19C878;"></i>{{ benefit }}
         </div>

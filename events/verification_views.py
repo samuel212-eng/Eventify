@@ -60,7 +60,16 @@ def apply_for_verification(request):
     else:
         form = OrganizerVerificationForm(instance=profile)
 
-    return render(request, 'events/apply_verification.html', {'form': form})
+    return render(request, 'events/apply_verification.html', {
+        'form': form,
+        'benefits': [
+            'A verified ✓ badge on all your events',
+            'Ability to create paid events',
+            'Higher search ranking',
+            'Faster support response',
+            'Attendee trust & more ticket sales',
+        ]
+    })
 
 
 @login_required
