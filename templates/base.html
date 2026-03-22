@@ -258,8 +258,13 @@
 
       <div class="d-flex gap-2 align-items-center">
         {% if user.is_authenticated %}
+            {% if user.is_staff %}
+                  <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin_dashboard' %}">📊 Dashboard</a>
+                  </li>
+            {% endif %}
           <a href="{% url 'event_create' %}" class="btn btn-brand">+ Create Event</a>
-          <span class="text-muted small">{{ user.username }}</span>
+          <span class="{#text-muted#} small">{{ user.username }}</span>
           <form method="post" action="{% url 'logout' %}" class="d-inline">
             {% csrf_token %}
             <button type="submit" class="btn btn-sm" style="color:var(--muted);">Log out</button>
@@ -273,7 +278,7 @@
   </div>
 </nav>
 
-<!-- ============ FLASH MESSAGES ============ -->
+<!-- FLASH MESSAGES -->
 {% if messages %}
   <div class="container mt-3">
     {% for message in messages %}
@@ -285,12 +290,12 @@
   </div>
 {% endif %}
 
-<!-- ============ PAGE CONTENT ============ -->
+<!--PAGE CONTENT -->
 <main>
   {% block content %}{% endblock %}
 </main>
 
-<!-- ============ FOOTER ============ -->
+<!--FOOTER-->
 <footer>
   <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
     <span><strong style="color:var(--brand)">⚡ Eventify</strong> — Discover & host amazing events</span>
