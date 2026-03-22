@@ -59,10 +59,10 @@
 </style>
 
 <script>
-// =============================================
-//  Poll the server every 5 seconds to check
-//  if Safaricom has confirmed the payment.
-// =============================================
+
+//  Poll the server every 5 seconds to check//
+//  if Safaricom has confirmed the payment.//
+
 
 const CHECK_URL  = "{% url 'check_payment_status' payment.pk %}";
 const MAX_CHECKS = 24;   // 24 × 5 seconds = 2 minutes max wait

@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<!-- ========== HERO SECTION ========== -->
+<!-- HERO SECTION -->
 <section style="
   background: radial-gradient(ellipse at top left, #3D0020 0%, #0D0D0D 55%);
   padding: 6rem 0 5rem;
@@ -44,7 +44,7 @@
   </div>
 </section>
 
-<!-- ========== STATS ========== -->
+<!-- STATS -->
 <section class="container my-5">
   <div class="row g-4 text-center">
     <div class="col-6 col-md-3">
@@ -74,7 +74,7 @@
   </div>
 </section>
 
-<!-- ========== UPCOMING EVENTS ========== -->
+<!-- UPCOMING EVENTS  -->
 <section class="container mb-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 style="font-size:1.75rem;">Upcoming Events</h2>
@@ -127,7 +127,7 @@
   {% endif %}
 </section>
 
-<!-- ========== CATEGORIES ========== -->
+<!-- CATEGORIES  -->
 {% if categories %}
 <section class="container mb-5">
   <h2 style="font-size:1.75rem; margin-bottom:1.5rem;">Browse by Category</h2>
@@ -142,7 +142,7 @@
 </section>
 {% endif %}
 
-<!-- ========== CTA BANNER ========== -->
+<!-- CTA BANNER  -->
 {% if not user.is_authenticated %}
 <section class="container mb-5">
   <div style="
