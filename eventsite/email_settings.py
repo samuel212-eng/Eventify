@@ -1,9 +1,3 @@
-# =============================================
-#  Paste these at the BOTTOM of settings.py
-# =============================================
-
-# ── FEATURE 3: Email settings ──────────────
-#
 # During development — emails print to your terminal (no SMTP needed)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
