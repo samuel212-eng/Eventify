@@ -5,7 +5,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.template.defaultfilters import slugify
 
 from .models import Event, Category, Registration, EventReview, Waitlist, EventApproval, OrganizerProfile
@@ -18,63 +18,69 @@ from django.http import HttpResponse
 from django.utils import timezone
 
 # improved view to check on time
+
 def home(request):
-    from .models import Event, Category, Registration, EventReview
+    from django.utils import timezone
+    import datetime
 
     upcoming_events = Event.objects.filter(is_published=True).order_by('date')[:6]
     categories      = Category.objects.all()
-
-    # Real stats from the database
     total_events    = Event.objects.filter(is_published=True).count()
-    total_regs      = Registration.objects.count()
-    total_users     = Registration.objects.values('user').distinct().count()
-    total_cats      = Category.objects.count()
 
+    # Hot events: most registrations in last 48 hours
+    cutoff     = timezone.now() - datetime.timedelta(hours=48)
+    hot_events = (
+        Event.objects
+        .filter(is_published=True, date__gte=timezone.now())
+        .annotate(recent_regs=Count('registrations', filter=Q(registrations__registered_at__gte=cutoff)))
+        .filter(recent_regs__gt=0)
+        .order_by('-recent_regs')[:6]
+    )
+    # Fallback: if no recent regs, show events with most total attendees
+    if not hot_events.exists():
+        hot_events = (
+            Event.objects
+            .filter(is_published=True, date__gte=timezone.now())
+            .annotate(reg_count=Count('registrations'))
+            .order_by('-reg_count')[:6]
+        )
 
-    social_links = [
-        {"icon": "twitter-x", "label": "Twitter"},
-        {"icon": "instagram", "label": "Instagram"},
-        {"icon": "linkedin", "label": "LinkedIn"},
-    ]
-
-    stats = [
-        (max(total_events, 1),  'Live Events',      '🎪'),
-        (max(total_users,  10), 'Happy Attendees',  '👥'),
-        (max(total_regs,   20), 'Tickets Sold',     '🎟️'),
-        (max(total_cats,   6),  'Categories',       '🏷️'),
-    ]
-
-    # Real reviews (Priority #6 — no fake testimonials)
+    # Real reviews
+    from .models import EventReview
     real_reviews = (
         EventReview.objects
-        .filter(rating__gte=4)        # Only 4 and 5 star reviews
+        .filter(rating__gte=4)
         .select_related('author', 'event')
-        .order_by('-created_at')[:3]  # Three most recent good reviews
+        .order_by('-created_at')[:3]
     )
 
-    # Problem/solution pairs for "Why Eventify" section
+    # Stats
+    total_regs  = Registration.objects.count()
+    total_users = Registration.objects.values('user').distinct().count()
+    stats = [
+        (max(total_events, 1),  'Live Events',     '🎪'),
+        (max(total_users,  10), 'Happy Attendees', '👥'),
+        (max(total_regs,   20), 'Tickets Sold',    '🎟️'),
+        (max(categories.count(), 6), 'Categories', '🏷️'),
+    ]
+
     why_pairs = [
-        (
-            "Selling tickets through WhatsApp groups and chasing M-Pesa payments manually.",
-            "A professional event page with automatic M-Pesa checkout and real-time attendee tracking.",
-        ),
-        (
-            "Attendees losing paper tickets or forgetting event details.",
-            "Instant QR code tickets delivered by email, scannable from any phone at the door.",
-        ),
-        (
-            "No way to verify if an organiser is legitimate before buying a ticket.",
-            "Every organiser on Eventify is ID-verified. The ✓ badge means they've been checked.",
-        ),
+        ("Selling tickets via WhatsApp and chasing M-Pesa payments manually.",
+         "Professional event pages with automatic M-Pesa checkout and live attendee tracking."),
+        ("Attendees losing paper tickets or forgetting event details.",
+         "Instant QR code tickets, scannable from any phone. Never lost."),
+        ("No way to verify an organiser is legitimate before paying.",
+         "Every organiser on Eventify is ID-verified. The ✓ badge means we've checked."),
     ]
 
     return render(request, 'events/home.html', {
         'upcoming_events': upcoming_events,
+        'hot_events':      hot_events,
         'categories':      categories,
+        'total_events':    total_events,
         'stats':           stats,
         'real_reviews':    real_reviews,
         'why_pairs':       why_pairs,
-        'social_links': social_links,
     })
 
 
@@ -328,21 +334,40 @@ def event_register(request, pk):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            reg       = form.save(commit=False)
+            reg = form.save(commit=False)
             reg.event = event
-            reg.user  = request.user
+            reg.user = request.user
             reg.save()
 
-            # FEATURE 3: Send confirmation email
             if request.user.email:
+                from .feature_views import send_registration_confirmation
                 send_registration_confirmation(request.user, event, reg)
 
-            messages.success(request, f"🎟️ Registered! Your code is {reg.check_in_code}")
-            return redirect('my_tickets')
+            return redirect('registration_success', registration_pk=reg.pk)
     else:
         form = RegistrationForm()
 
     return render(request, 'events/event_register.html', {'form': form, 'event': event})
+
+
+#         # FEATURE 3: Send confirmation email
+#         if request.user.email:
+#             send_registration_confirmation(request.user, event, reg)
+#
+#         messages.success(request, f"🎟️ Registered! Your code is {reg.check_in_code}")
+#         return redirect('my_tickets')
+# else:
+#     form = RegistrationForm()
+#
+# return render(request, 'events/event_register.html', {'form': form, 'event': event})
+
+        # 3. new view for the success page
+@login_required
+def registration_success(request, registration_pk):
+    """The confetti + animated ticket reveal page"""
+    reg = get_object_or_404(Registration, pk=registration_pk, user=request.user)
+    return render(request, 'events/registration_success.html', {'registration': reg})
+
 
 # new add on and improvement
 @login_required

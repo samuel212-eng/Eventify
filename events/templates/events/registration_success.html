@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}You're In! — {{ registration.event.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Confetti canvas ── */
+#confetti-canvas {
+  position: fixed; inset: 0; pointer-events: none; z-index: 9998;
+}
+
+/* ── Ticket reveal animation ── */
+@keyframes ticketSlideIn {
+  0%   { opacity:0; transform:perspective(800px) rotateX(45deg) translateY(60px) scale(.9); }
+  60%  { transform:perspective(800px) rotateX(-4deg) translateY(-6px) scale(1.01); }
+  100% { opacity:1; transform:perspective(800px) rotateX(0) translateY(0) scale(1); }
+}
+@keyframes stampPop {
+  0%   { opacity:0; transform:scale(2.5) rotate(-15deg); }
+  60%  { transform:scale(.92) rotate(2deg); }
+  100% { opacity:1; transform:scale(1) rotate(-3deg); }
+}
+@keyframes shimmerSlide {
+  0%   { left: -100%; }
+  100% { left: 200%; }
+}
+@keyframes pulseGreen {
+  0%,100% { box-shadow: 0 0 0 0 rgba(25,200,120,.4); }
+  50%      { box-shadow: 0 0 0 16px rgba(25,200,120,0); }
+}
+
+.ticket-wrap {
+  animation: ticketSlideIn .8s .3s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+.ticket-stamp {
+  animation: stampPop .5s 1.2s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+/* The physical ticket */
+.ticket {
+  background: linear-gradient(135deg, #111111, #1A0A0F);
+  border: 1px solid rgba(255,77,109,.3);
+  border-radius: 20px;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+  max-width: 480px;
+  margin: 0 auto;
+  box-shadow: 0 32px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(255,77,109,.15);
+}
+
+/* Shimmer sweep effect */
+.ticket::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 60px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent);
+  animation: shimmerSlide 2.5s 1.5s ease-in-out;
+}
+
+/* Tear line */
+.ticket-tear {
+  display: flex; align-items: center; gap: 0;
+  position: relative; margin: 0 -1px;
+}
+.ticket-tear::before {
+  content: '';
+  flex: 1; height: 1px;
+  border-top: 1.5px dashed rgba(255,77,109,.3);
+}
+.tear-circle {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--dark); flex-shrink: 0;
+  border: 1px solid rgba(255,77,109,.3);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<canvas id="confetti-canvas"></canvas>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem 1rem;background:radial-gradient(ellipse at center,rgba(25,200,120,.06) 0%,transparent 60%);">
+  <div style="width:100%;max-width:520px;">
+
+    <!-- Success message -->
+    <div style="text-align:center;margin-bottom:32px;" class="fade-up">
+      <div style="width:72px;height:72px;border-radius:50%;background:rgba(25,200,120,.12);border:2px solid var(--success);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:2rem;animation:pulseGreen 2s ease-in-out infinite;">✅</div>
+      <h1 style="font-size:2rem;margin-bottom:8px;">You're officially in! 🎉</h1>
+      <p style="color:var(--muted);font-size:.95rem;">Your spot is confirmed. See you there!</p>
+    </div>
+
+    <!-- THE TICKET -->
+    <div class="ticket-wrap" style="position:relative;">
+      <div class="ticket">
+
+        <!-- Colour header strip -->
+        <div style="background:linear-gradient(135deg,var(--brand),var(--brand-dark));padding:20px 24px 16px;">
+          <div style="font-size:.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:4px;">EVENT TICKET</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:#fff;line-height:1.2;">
+            {{ registration.event.title }}
+          </div>
+        </div>
+
+        <!-- Main body -->
+        <div style="padding:20px 24px;">
+          <div class="row g-3 mb-4">
+            <div class="col-6">
+              <div style="color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Date</div>
+              <div style="font-weight:600;font-size:.9rem;">{{ registration.event.date|date:"M d, Y" }}</div>
+            </div>
+            <div class="col-6">
+              <div style="color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Time</div>
+              <div style="font-weight:600;font-size:.9rem;">{{ registration.event.date|date:"g:i A" }}</div>
+            </div>
+            <div class="col-6">
+              <div style="color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Venue</div>
+              <div style="font-weight:600;font-size:.9rem;">{{ registration.event.location|truncatechars:28 }}</div>
+            </div>
+            <div class="col-6">
+              <div style="color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Attendee</div>
+              <div style="font-weight:600;font-size:.9rem;">{{ registration.user.get_full_name|default:registration.user.username }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tear line -->
+        <div class="ticket-tear"><div class="tear-circle"></div><div class="tear-circle" style="margin-left:auto;"></div></div>
+
+        <!-- QR section -->
+        <div style="padding:20px 24px;display:flex;align-items:center;gap:20px;">
+          <div>
+            <img src="{% url 'ticket_qr' registration.pk %}" alt="QR"
+                 style="width:88px;height:88px;border-radius:10px;display:block;">
+          </div>
+          <div>
+            <div style="color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Check-In Code</div>
+            <div style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;letter-spacing:3px;color:var(--brand);">{{ registration.check_in_code }}</div>
+            <div style="color:var(--muted);font-size:.75rem;margin-top:4px;">Show this QR at the entrance</div>
+          </div>
+        </div>
+
+        <!-- Bottom strip -->
+        <div style="background:rgba(255,255,255,.03);border-top:1px solid var(--border);padding:10px 24px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:var(--muted);font-size:.72rem;">⚡ Eventify · eventify.co.ke</span>
+          <span style="color:var(--muted);font-size:.72rem;">{{ registration.registered_at|date:"d M Y" }}</span>
+        </div>
+      </div>
+
+      <!-- VERIFIED STAMP -->
+      <div class="ticket-stamp" style="position:absolute;top:16px;right:16px;background:rgba(25,200,120,.1);border:2px solid var(--success);border-radius:50%;width:64px;height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-3deg);">
+        <i class="bi bi-check2" style="color:var(--success);font-size:1.6rem;"></i>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="d-flex gap-3 justify-content-center flex-wrap mt-4 fade-up-3">
+      <a href="{% url 'download_ticket_pdf' registration.pk %}" class="btn-brand" style="padding:11px 24px;">
+        <i class="bi bi-download"></i>Download PDF Ticket
+      </a>
+      <a href="{% url 'my_tickets' %}" class="btn-ghost" style="padding:11px 24px;">
+        <i class="bi bi-ticket"></i>All My Tickets
+      </a>
+    </div>
+
+    <!-- Share prompt -->
+    <div style="text-align:center;margin-top:20px;">
+      <p style="color:var(--muted);font-size:.82rem;margin-bottom:10px;">Tell your friends you're going!</p>
+      <a href="https://api.whatsapp.com/send?text=I%27m%20going%20to%20{{ registration.event.title|urlencode }}!%20Join%20me%20%F0%9F%8E%89%20https%3A%2F%2Fyourdomain.com%2Fevents%2F{{ registration.event.slug }}%2F"
+         target="_blank" rel="noopener"
+         style="display:inline-flex;align-items:center;gap:6px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.25);border-radius:50px;padding:8px 20px;color:#25D367;font-size:.855rem;font-weight:600;text-decoration:none;transition:all .2s;"
+         onmouseover="this.style.background='rgba(37,211,102,.2)'" onmouseout="this.style.background='rgba(37,211,102,.1)'">
+        <i class="bi bi-whatsapp"></i>Share on WhatsApp
+      </a>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ════════════════════════════════════
+   CONFETTI EXPLOSION
+   Fires when the page loads
+════════════════════════════════════ */
+const canvas = document.getElementById('confetti-canvas');
+const ctx    = canvas.getContext('2d');
+canvas.width  = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const COLORS = ['#FF4D6D','#FFBE0B','#19C878','#3A86FF','#FF6B6B','#FFD166','#fff'];
+const pieces = [];
+
+for (let i = 0; i < 160; i++) {
+  pieces.push({
+    x:     Math.random() * canvas.width,
+    y:     Math.random() * canvas.height - canvas.height,
+    r:     Math.random() * 6 + 3,
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    vx:    (Math.random() - .5) * 4,
+    vy:    Math.random() * 4 + 2,
+    vr:    (Math.random() - .5) * .2,
+    angle: Math.random() * Math.PI * 2,
+    shape: Math.random() > .5 ? 'rect' : 'circle',
+    w:     Math.random() * 10 + 5,
+    h:     Math.random() * 5 + 2,
+  });
+}
+
+let frame = 0;
+function drawConfetti() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  pieces.forEach(p => {
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.angle);
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = Math.max(0, 1 - frame / 180);
+    if (p.shape === 'circle') {
+      ctx.beginPath(); ctx.arc(0, 0, p.r, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+    }
+    ctx.restore();
+    p.x     += p.vx;
+    p.y     += p.vy;
+    p.vy    += 0.08;  // gravity
+    p.angle += p.vr;
+    p.vx    *= 0.99;
+  });
+  frame++;
+  if (frame < 200) requestAnimationFrame(drawConfetti);
+  else ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// Start after the ticket animation completes
+setTimeout(drawConfetti, 500);
+
+window.addEventListener('resize', () => {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+{% endblock %}

@@ -99,4 +99,7 @@ urlpatterns = [
 
     # Share link
     path('events/<int:event_pk>/share-link/',  extra_views.get_event_share_link, name='event_share_link'),
+
+    path('registration/<int:registration_pk>/success/', views.registration_success, name='registration_success'),
+
 ]

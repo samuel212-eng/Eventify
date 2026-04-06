@@ -104,11 +104,17 @@ option{background:var(--surface)}
 /* PROGRESS */
 .progress-track{background:var(--surface-2,#222);border-radius:50px;height:6px;overflow:hidden}
 .progress-fill{height:100%;border-radius:50px;transition:width .6s ease}
+{##}
+{#/* STAT */#}
+{#.stat-box{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;text-align:center;transition:border-color .2s,transform .2s}#}
+{#.stat-box:hover{border-color:var(--brand);transform:translateY(-2px)}#}
+{#.stat-number{font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;color:var(--brand);line-height:1}#}
 
-/* STAT */
-.stat-box{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;text-align:center;transition:border-color .2s,transform .2s}
-.stat-box:hover{border-color:var(--brand);transform:translateY(-2px)}
-.stat-number{font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;color:var(--brand);line-height:1}
+.morph-number {
+  font-variant-numeric: tabular-nums;
+  transition: all .1s;
+}
+
 
 /* EMPTY STATE */
 .empty-state{background:var(--card-bg);border:1px dashed var(--border-light);border-radius:var(--radius);padding:64px 32px;text-align:center}
@@ -175,6 +181,23 @@ footer{background:var(--card-bg);border-top:1px solid var(--border);padding:48px
   .navbar-brand{font-size:1.2rem}
 }
 </style>
+<style>
+.glass-event-card {
+  background: rgba(17,17,17,.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: transform .25s, box-shadow .25s;
+}
+.glass-event-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(255,77,109,.2);
+}
+</style>
+
+
 {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -360,6 +383,89 @@ document.querySelectorAll('.scroll-reveal').forEach(el=>rObs.observe(el));
 
 function getCsrf(){return document.cookie.split('; ').find(r=>r.startsWith('csrftoken='))?.split('=')[1]||'';}
 </script>
+{#<script>#}
+{#// Enhanced counter with easing#}
+{#function easedCounter(el, target, duration=2000) {#}
+{#  const start = performance.now();#}
+{#  function update(now) {#}
+{#    const elapsed = now - start;#}
+{#    const progress = Math.min(elapsed / duration, 1);#}
+{#    // Ease out cubic#}
+{#    const eased = 1 - Math.pow(1 - progress, 3);#}
+{#    const current = Math.floor(eased * target);#}
+{#    el.textContent = current.toLocaleString() + '+';#}
+{#    if (progress < 1) requestAnimationFrame(update);#}
+{#  }#}
+{#  requestAnimationFrame(update);#}
+{#}#}
+{##}
+{#// Replace basic counter animation with this on page load#}
+{#document.querySelectorAll('.counter').forEach(el => {#}
+{#  el.classList.add('morph-number');#}
+{#});#}
+{#</script>#}
+
+<script>
+function easedCounter(el, target, duration = 2000) {
+  const start = performance.now();
+
+  function update(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = Math.floor(eased * target);
+
+    el.textContent = current.toLocaleString() + '+';
+
+    if (progress < 1) requestAnimationFrame(update);
+  }
+
+  requestAnimationFrame(update);
+}
+
+// 👇 Animate only when visible
+const counterObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const el = entry.target;
+      const target = parseInt(el.dataset.target);
+
+      easedCounter(el, target);
+      counterObserver.unobserve(el);
+    }
+  });
+}, { threshold: 0.5 });
+
+// 👇 Attach to all counters
+document.querySelectorAll('.counter').forEach(el => {
+  el.classList.add('morph-number');
+  counterObserver.observe(el);
+});
+</script>
+
 {% block extra_js %}{% endblock %}
+
+{#floating action button(mobile)#}
+{% if user.is_authenticated %}
+<a href="{% url 'event_create' %}" id="fab"
+   style="
+     display:none; position:fixed; bottom:100px; right:20px;
+     width:52px; height:52px; border-radius:50%;
+     background:var(--brand); color:#fff;
+     align-items:center; justify-content:center;
+     font-size:1.5rem; text-decoration:none;
+     box-shadow:0 6px 20px rgba(255,77,109,.45);
+     z-index:995; transition:transform .2s,box-shadow .2s;
+   "
+   onmouseover="this.style.transform='scale(1.08)';this.style.boxShadow='0 10px 28px rgba(255,77,109,.6)'"
+   onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 6px 20px rgba(255,77,109,.45)'"
+   title="Create Event">
+  <i class="bi bi-plus-lg"></i>
+</a>
+<style>
+@media(max-width:991px){#fab{display:flex !important;}}
+</style>
+{% endif %}
 </body>
 </html>

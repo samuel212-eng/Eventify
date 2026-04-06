@@ -4,36 +4,243 @@
 {% block content %}
 
 <!-- ═══ HERO with real photography ═══ -->
-<section style="position:relative;min-height:88vh;display:flex;align-items:center;overflow:hidden;padding:5rem 0 4rem;">
-  <div style="position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1600&q=80');background-size:cover;background-position:center;"></div>
-  <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(10,10,10,.93) 0%,rgba(10,10,10,.75) 55%,rgba(10,10,10,.35) 100%);"></div>
-  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 15% 60%,rgba(255,77,109,.13) 0%,transparent 55%);"></div>
+{#<section style="position:relative;min-height:88vh;display:flex;align-items:center;overflow:hidden;padding:5rem 0 4rem;">#}
+{#  <div style="position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1600&q=80');background-size:cover;background-position:center;"></div>#}
+{#  <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(10,10,10,.93) 0%,rgba(10,10,10,.75) 55%,rgba(10,10,10,.35) 100%);"></div>#}
+{#  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 15% 60%,rgba(255,77,109,.13) 0%,transparent 55%);"></div>#}
+{##}
+{#  <div class="container" style="position:relative;z-index:1;">#}
+{#    <div class="row">#}
+{#      <div class="col-lg-7 col-xl-6">#}
+{#        <div class="tag fade-up mb-4"><i class="bi bi-lightning-charge-fill"></i>#1 Event Platform in Kenya</div>#}
+{#        <h1 class="fade-up-1" style="font-size:clamp(2.4rem,5vw,4rem);line-height:1.07;margin-bottom:1.4rem;letter-spacing:-1px;">#}
+{#          Your next<br>#}
+{#          <span style="background:linear-gradient(135deg,var(--brand),#FF8FA3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">unforgettable</span><br>#}
+{#          experience starts here.#}
+{#        </h1>#}
+{#        <p class="fade-up-2" style="color:rgba(239,239,239,.8);font-size:1.05rem;max-width:460px;margin-bottom:2rem;line-height:1.75;">#}
+{#          Concerts, workshops, tech summits, food festivals — discover what's happening near you and book with M-Pesa in seconds.#}
+{#        </p>#}
+{#        <div class="d-flex gap-3 flex-wrap fade-up-3">#}
+{#          <a href="{% url 'event_list' %}" class="btn-brand" style="padding:13px 28px;font-size:1rem;"><i class="bi bi-grid-3x3-gap-fill"></i>Find Events</a>#}
+{#          <a href="{% url 'event_create' %}" class="btn-outline-brand" style="padding:13px 28px;font-size:1rem;border-color:rgba(255,255,255,.35);color:#fff !important;"><i class="bi bi-plus-circle"></i>Host an Event</a>#}
+{#        </div>#}
+{#        <div class="d-flex gap-4 mt-4 flex-wrap fade-up-4">#}
+{#          <span style="color:rgba(239,239,239,.6);font-size:.8rem;display:flex;align-items:center;gap:5px;"><i class="bi bi-shield-fill-check" style="color:var(--success);"></i>Verified Organisers</span>#}
+{#          <span style="color:rgba(239,239,239,.6);font-size:.8rem;display:flex;align-items:center;gap:5px;"><i class="bi bi-phone-fill" style="color:#19C878;"></i>M-Pesa &amp; PayPal</span>#}
+{#          <span style="color:rgba(239,239,239,.6);font-size:.8rem;display:flex;align-items:center;gap:5px;"><i class="bi bi-qr-code" style="color:var(--brand);"></i>Instant QR Tickets</span>#}
+{#        </div>#}
+{#      </div>#}
+{#    </div>#}
+{#  </div>#}
+{#</section>#}
 
-  <div class="container" style="position:relative;z-index:1;">
-    <div class="row">
-      <div class="col-lg-7 col-xl-6">
-        <div class="tag fade-up mb-4"><i class="bi bi-lightning-charge-fill"></i>#1 Event Platform in Kenya</div>
-        <h1 class="fade-up-1" style="font-size:clamp(2.4rem,5vw,4rem);line-height:1.07;margin-bottom:1.4rem;letter-spacing:-1px;">
-          Your next<br>
-          <span style="background:linear-gradient(135deg,var(--brand),#FF8FA3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">unforgettable</span><br>
-          experience starts here.
-        </h1>
-        <p class="fade-up-2" style="color:rgba(239,239,239,.8);font-size:1.05rem;max-width:460px;margin-bottom:2rem;line-height:1.75;">
-          Concerts, workshops, tech summits, food festivals — discover what's happening near you and book with M-Pesa in seconds.
-        </p>
-        <div class="d-flex gap-3 flex-wrap fade-up-3">
-          <a href="{% url 'event_list' %}" class="btn-brand" style="padding:13px 28px;font-size:1rem;"><i class="bi bi-grid-3x3-gap-fill"></i>Find Events</a>
-          <a href="{% url 'event_create' %}" class="btn-outline-brand" style="padding:13px 28px;font-size:1rem;border-color:rgba(255,255,255,.35);color:#fff !important;"><i class="bi bi-plus-circle"></i>Host an Event</a>
+{#    new hero section#}
+
+<section style="position:relative;min-height:92vh;display:flex;align-items:center;overflow:hidden;">
+
+  <!-- ── Animated mesh gradient canvas ── -->
+  <canvas id="meshCanvas" style="position:absolute;inset:0;width:100%;height:100%;opacity:.55;"></canvas>
+
+  <!-- ── Real photo overlay ── -->
+  <div style="position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1600&q=80');background-size:cover;background-position:center;opacity:.18;"></div>
+
+  <!-- ── Dark gradient overlay ── -->
+  <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(10,10,10,.97) 0%,rgba(10,10,10,.8) 50%,rgba(10,10,10,.6) 100%);"></div>
+
+  <!-- ── Content ── -->
+  <div class="container" style="position:relative;z-index:2;padding:5rem 0;">
+    <div class="row align-items-center g-5">
+
+      <!-- LEFT -->
+      <div class="col-lg-6">
+        <div class="tag fade-up mb-4" style="gap:6px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--success);animation:pulse 1.5s infinite;"></span>
+          Live Events Happening Now
         </div>
-        <div class="d-flex gap-4 mt-4 flex-wrap fade-up-4">
-          <span style="color:rgba(239,239,239,.6);font-size:.8rem;display:flex;align-items:center;gap:5px;"><i class="bi bi-shield-fill-check" style="color:var(--success);"></i>Verified Organisers</span>
-          <span style="color:rgba(239,239,239,.6);font-size:.8rem;display:flex;align-items:center;gap:5px;"><i class="bi bi-phone-fill" style="color:#19C878;"></i>M-Pesa &amp; PayPal</span>
-          <span style="color:rgba(239,239,239,.6);font-size:.8rem;display:flex;align-items:center;gap:5px;"><i class="bi bi-qr-code" style="color:var(--brand);"></i>Instant QR Tickets</span>
+
+        <h1 class="fade-up-1" style="
+          font-size:clamp(2.8rem,6vw,5rem); line-height:1.05;
+          letter-spacing:-2px; margin-bottom:1.5rem;
+        ">
+          Discover<br>
+          <span style="
+            position:relative; display:inline-block;
+            background:linear-gradient(135deg,#FF4D6D 0%,#FF8FA3 50%,#FFB3C1 100%);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            background-clip:text;
+          ">extraordinary</span><br>
+          events.
+        </h1>
+
+        <p class="fade-up-2" style="color:rgba(239,239,239,.72);font-size:1.1rem;max-width:480px;line-height:1.8;margin-bottom:2.5rem;">
+          Concerts, workshops, tech summits, food festivals. Book with M-Pesa in seconds. QR ticket delivered instantly.
+        </p>
+
+        <div class="d-flex gap-3 flex-wrap fade-up-3">
+          <a href="{% url 'event_list' %}" class="btn-brand" style="padding:14px 32px;font-size:1.05rem;">
+            <i class="bi bi-grid-3x3-gap-fill"></i>Find Events
+          </a>
+          <a href="{% url 'event_create' %}" style="
+            display:inline-flex;align-items:center;gap:8px;
+            padding:14px 32px;font-size:1.05rem;font-weight:600;
+            color:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.2);
+            border-radius:50px;transition:all .2s;font-family:'Syne',sans-serif;
+            background:rgba(255,255,255,.05);backdrop-filter:blur(10px);
+          " onmouseover="this.style.background='rgba(255,255,255,.12)';this.style.color='#fff'"
+             onmouseout="this.style.background='rgba(255,255,255,.05)';this.style.color='rgba(255,255,255,.8)'">
+            <i class="bi bi-plus-circle"></i>Host an Event
+          </a>
+        </div>
+
+        <!-- Trust row -->
+        <div class="d-flex gap-5 mt-5 flex-wrap fade-up-4">
+          <div style="text-align:center;">
+            <div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--brand);">{{ total_events }}+</div>
+            <div style="color:rgba(239,239,239,.45);font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;">Live Events</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--brand);">10K+</div>
+            <div style="color:rgba(239,239,239,.45);font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;">Attendees</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--brand);">✓ 100%</div>
+            <div style="color:rgba(239,239,239,.45);font-size:.75rem;text-transform:uppercase;letter-spacing:.8px;">Verified Orgs</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT — floating 3D event cards -->
+      <div class="col-lg-6 d-none d-lg-block">
+        <div style="position:relative;height:480px;" id="floatingCards">
+
+          <!-- Card 1 — main -->
+          <div style="
+            position:absolute;top:20px;right:20px;width:260px;
+            background:rgba(17,17,17,.9);border:1px solid rgba(255,77,109,.2);
+            border-radius:16px;overflow:hidden;
+            box-shadow:0 24px 64px rgba(0,0,0,.6),0 0 0 1px rgba(255,77,109,.1);
+            animation:float1 6s ease-in-out infinite;
+          ">
+            <div style="height:130px;background:linear-gradient(135deg,#3D0020,#1A0A20);display:flex;align-items:center;justify-content:center;font-size:3.5rem;">🎵</div>
+            <div style="padding:14px;">
+              <div class="tag mb-2" style="font-size:.65rem;">Music</div>
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:6px;">Nairobi Jazz Fest 2026</div>
+              <div style="color:var(--muted);font-size:.75rem;margin-bottom:10px;"><i class="bi bi-calendar3 me-1" style="color:var(--brand);"></i>Apr 20 · Uhuru Gardens</div>
+              <div class="d-flex justify-content-between align-items-center">
+                <span style="font-family:'Syne',sans-serif;font-weight:800;color:var(--brand);font-size:1rem;">KES 2,500</span>
+                <span style="background:rgba(25,200,120,.12);color:var(--success);font-size:.65rem;padding:2px 8px;border-radius:50px;font-weight:700;">48 left</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2 — secondary -->
+          <div style="
+            position:absolute;bottom:40px;left:0;width:230px;
+            background:rgba(17,17,17,.88);border:1px solid rgba(58,134,255,.2);
+            border-radius:16px;overflow:hidden;
+            box-shadow:0 20px 48px rgba(0,0,0,.5);
+            animation:float2 7s 1s ease-in-out infinite;
+          ">
+            <div style="height:100px;background:linear-gradient(135deg,#001040,#0A0820);display:flex;align-items:center;justify-content:center;font-size:2.8rem;">💻</div>
+            <div style="padding:12px;">
+              <div class="tag mb-1" style="font-size:.65rem;background:rgba(58,134,255,.1);color:var(--info);">Tech</div>
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.875rem;margin-top:6px;">iHub Dev Summit</div>
+              <div style="color:var(--success);font-weight:800;font-family:'Syne',sans-serif;margin-top:6px;">Free</div>
+            </div>
+          </div>
+
+          <!-- Floating notification badge -->
+          <div style="
+            position:absolute;top:200px;left:160px;
+            background:var(--brand);color:#fff;
+            border-radius:50px;padding:8px 16px;
+            font-size:.78rem;font-weight:700;
+            box-shadow:0 8px 24px rgba(255,77,109,.4);
+            animation:float3 5s 2s ease-in-out infinite;
+            display:flex;align-items:center;gap:6px;
+            white-space:nowrap;
+          ">
+            <i class="bi bi-qr-code-scan"></i>QR Ticket Ready!
+          </div>
+
+          <!-- M-Pesa badge -->
+          <div style="
+            position:absolute;top:350px;right:30px;
+            background:rgba(10,10,10,.85);backdrop-filter:blur(12px);
+            border:1px solid rgba(25,200,120,.3);
+            border-radius:50px;padding:8px 16px;
+            font-size:.78rem;font-weight:600;color:var(--success);
+            animation:float1 8s 3s ease-in-out infinite;
+            display:flex;align-items:center;gap:6px;
+          ">
+            <i class="bi bi-phone-fill"></i>Paid via M-Pesa ✓
+          </div>
+
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Scroll indicator -->
+  <div style="position:absolute;bottom:32px;left:50%;transform:translateX(-50%);text-align:center;z-index:2;animation:fadeIn 1s 2s ease both;">
+    <div style="color:rgba(255,255,255,.3);font-size:.72rem;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Scroll to explore</div>
+    <div style="width:1px;height:32px;background:linear-gradient(to bottom,rgba(255,255,255,.3),transparent);margin:0 auto;"></div>
+  </div>
 </section>
+
+<style>
+@keyframes float1 { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-12px) rotate(.5deg)} }
+@keyframes float2 { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-16px) rotate(-.8deg)} }
+@keyframes float3 { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-8px) scale(1.02)} }
+@keyframes pulse  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+</style>
+
+<script>
+/* ── Animated mesh gradient ── */
+(function(){
+  const canvas = document.getElementById('meshCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const orbs = [
+    { x:.15, y:.5,  r:.45, hue:340, speed:.0004 },
+    { x:.8,  y:.25, r:.35, hue:220, speed:.0006 },
+    { x:.5,  y:.85, r:.3,  hue:160, speed:.0003 },
+  ];
+
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    orbs.forEach(orb => {
+      const x = (orb.x + Math.sin(t * orb.speed * 1000) * .12) * canvas.width;
+      const y = (orb.y + Math.cos(t * orb.speed * 1000) * .1)  * canvas.height;
+      const r = orb.r * Math.max(canvas.width, canvas.height);
+
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+      grad.addColorStop(0, `hsla(${orb.hue},80%,60%,.18)`);
+      grad.addColorStop(1, `hsla(${orb.hue},80%,60%,0)`);
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    });
+
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+{#ends here#}
+
 
 <!-- ═══ STATS with animated counters ═══ -->
 <section class="container my-5 scroll-reveal">
@@ -61,6 +268,67 @@
   </div>
 </section>
 {% endif %}
+
+{#    hot right now section#}
+    {% if hot_events %}
+<section class="container mb-5 scroll-reveal">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <div>
+      <div class="section-label">Trending now</div>
+      <h2 style="font-size:1.7rem;">🔥 Hot Right Now</h2>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:16px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px;" class="hot-scroll">
+    {% for event in hot_events %}
+      <a href="{% url 'event_detail' event.slug %}"
+         style="flex-shrink:0;width:280px;text-decoration:none;color:inherit;">
+        <div style="
+          background:var(--card-bg);border:1px solid var(--border);
+          border-radius:var(--radius);overflow:hidden;position:relative;
+          transition:transform .2s,box-shadow .2s;
+        " onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 16px 40px rgba(0,0,0,.4)'"
+           onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+
+          <!-- Image -->
+          <div style="height:160px;overflow:hidden;">
+            {% if event.image %}
+              <img src="{{ event.image.url }}" style="width:100%;height:100%;object-fit:cover;transition:transform .4s;"
+                   onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            {% else %}
+              <div style="width:100%;height:100%;background:linear-gradient(135deg,#2D0015,#111);display:flex;align-items:center;justify-content:center;font-size:3rem;">🎪</div>
+            {% endif %}
+          </div>
+
+          <!-- Fire rank badge -->
+          <div style="position:absolute;top:10px;left:10px;background:var(--brand);color:#fff;border-radius:50px;padding:3px 10px;font-size:.68rem;font-weight:700;display:flex;align-items:center;gap:3px;">
+            🔥 Trending
+          </div>
+
+          <div style="padding:14px;">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:6px;line-height:1.3;">{{ event.title|truncatechars:40 }}</div>
+            <div style="color:var(--muted);font-size:.78rem;margin-bottom:8px;">
+              <i class="bi bi-calendar3 me-1" style="color:var(--brand);"></i>{{ event.date|date:"M d · g A" }}
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span style="font-family:'Syne',sans-serif;font-weight:800;color:var(--brand);">
+                {% if event.price == 0 %}Free{% else %}KES {{ event.price|floatformat:0 }}{% endif %}
+              </span>
+              <span style="font-size:.75rem;color:var(--muted);">{{ event.spots_taken }} going</span>
+            </div>
+          </div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<style>
+.hot-scroll::-webkit-scrollbar { display:none; }
+</style>
+
+{#    ends here#}
 
 <!-- ═══ UPCOMING EVENTS with skeleton loaders ═══ -->
 <section class="container mb-5">
@@ -183,4 +451,75 @@ function animCounter(el){
 const cObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting&&!e.target.dataset.counted){e.target.dataset.counted=1;animCounter(e.target);}});},{threshold:.5});
 document.querySelectorAll('.counter').forEach(el=>cObs.observe(el));
 </script>
+
+
+{#    first time user welcome#}
+    {% if not user.is_authenticated %}
+<div id="welcomeModal" style="
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.8); backdrop-filter:blur(8px);
+  z-index:9990; align-items:center; justify-content:center;
+  padding:1rem;
+">
+  <div style="
+    background:var(--card-bg); border:1px solid var(--border);
+    border-radius:24px; padding:40px; max-width:460px; width:100%;
+    text-align:center; position:relative;
+    animation:fadeUp .5s ease both;
+  ">
+    <button onclick="closeWelcome()" style="position:absolute;top:16px;right:16px;background:var(--surface);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;color:var(--muted);font-size:.9rem;display:flex;align-items:center;justify-content:center;">✕</button>
+
+    <div style="font-size:3rem;margin-bottom:16px;">⚡</div>
+    <h2 style="font-size:1.6rem;margin-bottom:10px;">Welcome to Eventify</h2>
+    <p style="color:var(--muted);font-size:.9rem;line-height:1.65;margin-bottom:28px;">
+      Kenya's most trusted event platform. Discover verified events, buy tickets with M-Pesa, and get instant QR code entry.
+    </p>
+
+    <!-- Value props -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;text-align:left;">
+
+{#      {% for icon,text in "🎟️,Instant QR code tickets|📱,M-Pesa & PayPal checkout|🛡️,All organisers are ID-verified"|split:"|" %}#}
+{#        {% with pair=text %}#}
+{#        {% endwith %}#}
+{#      {% endfor %}#}
+
+      <div style="display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:10px;padding:10px 14px;">
+        <span style="font-size:1.2rem;flex-shrink:0;">🎟️</span>
+        <span style="font-size:.875rem;color:var(--muted-2);">Instant QR code tickets delivered to your phone</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:10px;padding:10px 14px;">
+        <span style="font-size:1.2rem;flex-shrink:0;">📱</span>
+        <span style="font-size:.875rem;color:var(--muted-2);">Pay with M-Pesa or PayPal — secure checkout</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:10px;padding:10px 14px;">
+        <span style="font-size:1.2rem;flex-shrink:0;">🛡️</span>
+        <span style="font-size:.875rem;color:var(--muted-2);">Every organiser is ID-verified — your money is safe</span>
+      </div>
+    </div>
+
+    <div class="d-flex gap-3">
+      <a href="{% url 'signup' %}" class="btn-brand" style="flex:1;justify-content:center;padding:12px;">Sign Up Free</a>
+      <a href="{% url 'event_list' %}" class="btn-ghost" style="flex:1;justify-content:center;padding:12px;">Browse First</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function closeWelcome() {
+  document.getElementById('welcomeModal').style.display = 'none';
+  sessionStorage.setItem('ev_welcomed', '1');
+}
+// Show after 3 seconds if not seen this session
+setTimeout(() => {
+  if (!sessionStorage.getItem('ev_welcomed')) {
+    document.getElementById('welcomeModal').style.display = 'flex';
+  }
+}, 3000);
+</script>
+{% endif %}
+
+
+
+
 {% endblock %}
+

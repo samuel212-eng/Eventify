@@ -1,0 +1,178 @@
+<!--
+=================================================================
+  CINEMATIC EVENT DETAIL HERO
+  Replace the top section of event_detail.html with this.
+  It creates a full-width immersive hero like a movie poster.
+=================================================================
+-->
+
+{% extends "base.html" %}
+{% block title %}{{ event.title }} — Eventify{% endblock %}
+{% block meta_desc %}{{ event.description|truncatechars:160 }}{% endblock %}
+
+<!-- Open Graph tags for rich WhatsApp/social previews -->
+{% block extra_css %}
+<meta property="og:title"       content="{{ event.title }}">
+<meta property="og:description" content="{{ event.description|truncatechars:160 }}">
+<meta property="og:type"        content="website">
+{% if event.image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ event.image.url }}">{% endif %}
+<meta property="og:url"         content="{{ request.build_absolute_uri }}">
+<meta name="twitter:card"       content="summary_large_image">
+
+<style>
+/* ── CINEMATIC HERO ── */
+.event-hero {
+  position: relative;
+  min-height: 65vh;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.event-hero-bg {
+  position: absolute; inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 8s ease;
+}
+.event-hero:hover .event-hero-bg { transform: scale(1.03); }
+
+.event-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(10,10,10,.3) 0%,
+    rgba(10,10,10,.1) 30%,
+    rgba(10,10,10,.85) 70%,
+    rgba(10,10,10,1) 100%
+  );
+}
+
+.event-hero-content {
+  position: relative; z-index: 2;
+  width: 100%; padding: 3rem 0 2rem;
+}
+
+/* ── FLOATING INFO PILLS ── */
+.info-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(10,10,10,.7); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 50px; padding: 6px 14px;
+  font-size: .8rem; color: rgba(255,255,255,.85);
+  white-space: nowrap;
+}
+
+/* ── BOOKING CARD glass effect ── */
+.glass-card {
+  background: rgba(17,17,17,.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 20px;
+}
+
+/* ── URGENCY PULSE ── */
+@keyframes urgencyPulse {
+  0%,100% { opacity:1; }
+  50%      { opacity:.6; }
+}
+.urgency-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--danger); flex-shrink: 0;
+  animation: urgencyPulse 1.2s ease-in-out infinite;
+}
+
+/* ── BLUR UP image loading ── */
+.blur-up {
+  filter: blur(12px);
+  transition: filter .6s ease;
+}
+.blur-up.loaded { filter: blur(0); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ═══ CINEMATIC HERO ═══ -->
+<section class="event-hero">
+  {% if event.image %}
+    <div class="event-hero-bg blur-up"
+         id="heroBg"
+         style="background-image:url('{{ event.image.url }}');"
+         data-src="{{ event.image.url }}">
+    </div>
+  {% else %}
+    <div class="event-hero-bg" style="background:linear-gradient(135deg,#2D0015,#0A0A0A 40%,#001A3D);"></div>
+    <!-- Floating emoji decoration -->
+    <div style="position:absolute;font-size:14rem;opacity:.04;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;user-select:none;">
+      {% if event.category.name == 'Music' %}🎵{% elif event.category.name == 'Technology' %}💻{% elif event.category.name == 'Sports' %}⚽{% else %}🎪{% endif %}
+    </div>
+  {% endif %}
+
+  <div class="event-hero-overlay"></div>
+
+  <div class="container event-hero-content">
+    <!-- Breadcrumb -->
+    <div class="d-flex align-items-center gap-2 mb-3" style="font-size:.8rem;color:rgba(255,255,255,.5);">
+      <a href="{% url 'home' %}" style="color:rgba(255,255,255,.5);">Home</a>
+      <i class="bi bi-chevron-right" style="font-size:.65rem;"></i>
+      <a href="{% url 'event_list' %}" style="color:rgba(255,255,255,.5);">Events</a>
+      <i class="bi bi-chevron-right" style="font-size:.65rem;"></i>
+      <span style="color:rgba(255,255,255,.8);">{{ event.title|truncatechars:30 }}</span>
+    </div>
+
+    <!-- Category + verified -->
+    <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
+      {% if event.category %}<div class="tag">{{ event.category.name }}</div>{% endif %}
+      {% load verification_tags %}
+      {% if event.organizer|is_verified_organizer %}
+        <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(25,200,120,.15);border:1px solid rgba(25,200,120,.3);border-radius:50px;padding:3px 10px;font-size:.7rem;font-weight:700;color:var(--success);">
+          <i class="bi bi-shield-check-fill"></i>Verified Organiser
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Title -->
+    <h1 style="font-size:clamp(1.9rem,5vw,3.5rem);color:#fff;margin-bottom:20px;max-width:700px;text-shadow:0 2px 20px rgba(0,0,0,.5);">
+      {{ event.title }}
+    </h1>
+
+    <!-- Info pills row -->
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <div class="info-pill"><i class="bi bi-calendar3" style="color:var(--brand);"></i>{{ event.date|date:"l, M d, Y" }}</div>
+      <div class="info-pill"><i class="bi bi-clock" style="color:var(--brand);"></i>{{ event.date|date:"g:i A" }}</div>
+      <div class="info-pill"><i class="bi bi-geo-alt" style="color:var(--brand);"></i>{{ event.location|truncatechars:30 }}</div>
+      {% if event.spots_taken > 0 %}
+        <div class="info-pill"><i class="bi bi-people-fill" style="color:var(--info);"></i>{{ event.spots_taken }} going</div>
+      {% endif %}
+      {% if event.average_rating %}
+        <div class="info-pill"><i class="bi bi-star-fill" style="color:var(--warning);"></i>{{ event.average_rating }} ({{ event.review_count }})</div>
+      {% endif %}
+    </div>
+
+    <!-- Urgency signal -->
+    {% if event.spots_left <= 10 and not event.is_full %}
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,107,107,.12);border:1px solid rgba(255,107,107,.3);border-radius:50px;padding:5px 14px;font-size:.8rem;font-weight:700;color:var(--danger);">
+        <span class="urgency-dot"></span>Only {{ event.spots_left }} spot{{ event.spots_left|pluralize }} left!
+      </div>
+    {% elif event.is_full %}
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,107,107,.12);border:1px solid rgba(255,107,107,.3);border-radius:50px;padding:5px 14px;font-size:.8rem;font-weight:700;color:var(--danger);">
+        <span class="urgency-dot"></span>Sold Out
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Rest of event detail content continues below in the same template... -->
+<!-- The booking box, description, reviews, Q&A etc go here -->
+
+<script>
+// Blur-up image reveal
+const bg = document.getElementById('heroBg');
+if (bg) {
+  const img = new Image();
+  img.onload = () => bg.classList.add('loaded');
+  img.src    = bg.dataset.src || bg.style.backgroundImage.slice(5,-2);
+}
+</script>
