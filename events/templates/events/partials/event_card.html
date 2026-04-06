@@ -1,0 +1,70 @@
+<!-- events/templates/events/partials/event_card.html -->
+<div class="event-card">
+  <div class="card-img-wrap">
+    {% if event.image %}
+      <img src="{{ event.image.url }}" alt="{{ event.title }}" class="card-img" loading="lazy">
+    {% else %}
+      <div class="img-placeholder">{% if event.category %}{% if event.category.name == 'Music' %}🎵{% elif event.category.name == 'Technology' %}💻{% elif event.category.name == 'Sports' %}⚽{% elif event.category.name == 'Food & Drink' %}🍔{% elif event.category.name == 'Art & Culture' %}🎨{% elif event.category.name == 'Networking' %}🤝{% else %}🎪{% endif %}{% else %}🎪{% endif %}</div>
+    {% endif %}
+    {% if event.capacity_percentage >= 60 and not event.is_full %}<div class="badge-hot"><i class="bi bi-fire"></i>Trending</div>{% endif %}
+    {% if event.price == 0 and not event.is_full %}<div class="badge-free">FREE</div>{% endif %}
+    {% if event.is_full %}<div class="badge-full">SOLD OUT</div>{% endif %}
+    <!-- WhatsApp share — appears on hover -->
+    <a href="https://api.whatsapp.com/send?text={{ event.title|urlencode }}%20https%3A%2F%2Fyourdomain.com%2Fevents%2F{{ event.slug }}%2F"
+       target="_blank" rel="noopener" onclick="event.stopPropagation();"
+       class="card-share-btn" title="Share on WhatsApp">
+      <i class="bi bi-whatsapp"></i>
+    </a>
+  </div>
+
+  <a href="{% url 'event_detail' event.slug %}" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;flex:1;">
+    <div class="card-body" style="flex:1;display:flex;flex-direction:column;">
+      {% if event.category %}<div class="tag mb-2">{{ event.category.name }}</div>{% endif %}
+
+      <h5 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:8px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ event.title }}</h5>
+
+      <!-- Single-line date+location (Priority #5) -->
+      <p style="color:var(--muted);font-size:.8rem;margin-bottom:10px;display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">
+        <i class="bi bi-calendar3" style="color:var(--brand);flex-shrink:0;"></i>
+        <span style="overflow:hidden;text-overflow:ellipsis;">{{ event.date|date:"M d · g A" }} &nbsp;·&nbsp; {{ event.location|truncatechars:20 }}</span>
+      </p>
+
+      <!-- Social proof: "X going" (Priority #5) -->
+      {% if event.spots_taken > 0 or event.average_rating %}
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:.78rem;color:var(--muted);">
+        {% if event.spots_taken > 0 %}
+          <span style="display:flex;align-items:center;gap:3px;">
+            <i class="bi bi-people-fill" style="color:var(--info);"></i>
+            <strong style="color:var(--text);">{{ event.spots_taken }}</strong> going
+          </span>
+        {% endif %}
+        {% if event.average_rating %}
+          <span style="display:flex;align-items:center;gap:3px;">
+            <i class="bi bi-star-fill" style="color:var(--warning);"></i>
+            <strong style="color:var(--text);">{{ event.average_rating }}</strong>
+          </span>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Progress bar -->
+      {% if event.capacity > 0 %}
+        <div class="progress-track mb-3">
+          <div class="progress-fill" style="width:{{ event.capacity_percentage }}%;background:{% if event.capacity_percentage >= 90 %}var(--danger){% elif event.capacity_percentage >= 70 %}var(--warning){% else %}var(--success){% endif %};"></div>
+        </div>
+      {% endif %}
+
+      <!-- Price + urgency -->
+      <div class="d-flex justify-content-between align-items-center mt-auto">
+        <span class="price-tag" style="font-size:1.08rem;">{% if event.price == 0 %}Free{% else %}KES {{ event.price|floatformat:0 }}{% endif %}</span>
+        {% if event.is_full %}
+          <span style="background:rgba(255,107,107,.1);color:var(--danger);font-size:.7rem;padding:3px 10px;border-radius:50px;font-weight:700;">SOLD OUT</span>
+        {% elif event.spots_left <= 10 %}
+          <span style="background:rgba(255,190,11,.1);color:var(--warning);font-size:.7rem;padding:3px 10px;border-radius:50px;font-weight:700;">⚡ Only {{ event.spots_left }} left!</span>
+        {% else %}
+          <span style="color:var(--muted);font-size:.75rem;">{{ event.spots_left }} spots left</span>
+        {% endif %}
+      </div>
+    </div>
+  </a>
+</div>

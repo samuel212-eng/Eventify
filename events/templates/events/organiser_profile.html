@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}{{ organiser.get_full_name|default:organiser.username }} — Eventify{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row g-5">
+
+    <!-- LEFT: Profile info -->
+    <div class="col-lg-4">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:32px;text-align:center;position:sticky;top:90px;">
+
+        <!-- Avatar -->
+        <div style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-dark));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:2.2rem;color:#fff;margin:0 auto 16px;">
+          {{ organiser.username|first|upper }}
+        </div>
+
+        <!-- Name -->
+        <h2 style="font-size:1.4rem;margin-bottom:4px;">{{ organiser.get_full_name|default:organiser.username }}</h2>
+        <p style="color:var(--muted);font-size:.855rem;margin-bottom:12px;">@{{ organiser.username }}</p>
+
+        <!-- Verified badge -->
+        {% load verification_tags %}
+        {% if organiser|is_verified_organizer %}
+          <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(25,200,120,.1);border:1px solid rgba(25,200,120,.25);border-radius:50px;padding:5px 14px;font-size:.78rem;font-weight:700;color:var(--success);margin-bottom:16px;">
+            <i class="bi bi-shield-check-fill"></i>Verified Organiser
+          </div>
+        {% endif %}
+
+        <!-- Bio -->
+        {% if organiser.organizer_profile.bio %}
+          <p style="color:var(--muted-2);font-size:.875rem;line-height:1.65;margin-bottom:20px;">
+            {{ organiser.organizer_profile.bio }}
+          </p>
+        {% endif %}
+
+        <!-- Organiser stats -->
+        <div class="row g-2 mb-4 text-center">
+          <div class="col-4">
+            <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--brand);">{{ total_events }}</div>
+            <div style="color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;">Events</div>
+          </div>
+          <div class="col-4">
+            <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--brand);">{{ total_attendees }}</div>
+            <div style="color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;">Attendees</div>
+          </div>
+          <div class="col-4">
+            <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--brand);">{{ follower_count }}</div>
+            <div style="color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;">Followers</div>
+          </div>
+        </div>
+
+        <!-- Rating -->
+        {% if avg_rating %}
+          <div style="background:var(--surface);border-radius:var(--radius-sm);padding:12px;margin-bottom:20px;">
+            <div style="color:var(--warning);font-size:1.1rem;margin-bottom:2px;">
+              {% for i in "12345" %}{% if forloop.counter <= avg_rating %}★{% else %}<span style="opacity:.25;">★</span>{% endif %}{% endfor %}
+            </div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.2rem;color:var(--brand);">{{ avg_rating }}</div>
+            <div style="color:var(--muted);font-size:.75rem;">{{ total_reviews }} review{{ total_reviews|pluralize }}</div>
+          </div>
+        {% endif %}
+
+        <!-- Follow button -->
+        {% if user.is_authenticated and user != organiser %}
+          <form method="POST" action="{% url 'follow_organizer' organiser.username %}">
+            {% csrf_token %}
+            <button type="submit" class="{% if is_following %}btn-ghost{% else %}btn-brand{% endif %} w-100" style="justify-content:center;padding:11px;">
+              {% if is_following %}
+                <i class="bi bi-person-check-fill"></i>Following
+              {% else %}
+                <i class="bi bi-person-plus-fill"></i>Follow Organiser
+              {% endif %}
+            </button>
+          </form>
+          {% if is_following %}
+            <p style="color:var(--muted);font-size:.75rem;text-align:center;margin-top:8px;">
+              <i class="bi bi-bell me-1"></i>You'll be notified about new events
+            </p>
+          {% endif %}
+        {% endif %}
+
+        <!-- Website / social links -->
+        {% if organiser.organizer_profile.website %}
+          <a href="{{ organiser.organizer_profile.website }}" target="_blank" rel="noopener"
+             style="display:flex;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-size:.82rem;margin-top:12px;">
+            <i class="bi bi-globe2"></i>{{ organiser.organizer_profile.website|truncatechars:30 }}
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- RIGHT: Events list -->
+    <div class="col-lg-8">
+      <div class="section-label">Events by this organiser</div>
+      <h2 style="font-size:1.7rem;margin-bottom:24px;">
+        {{ organiser.get_full_name|default:organiser.username }}'s Events
+      </h2>
+
+      {% if events %}
+        <div class="row g-4">
+          {% for event in events %}
+            <div class="col-md-6">
+              {% include "events/partials/event_card.html" %}
+            </div>
+          {% endfor %}
+        </div>
+
+        {% if events.has_other_pages %}
+          <div class="d-flex justify-content-center gap-3 mt-4">
+            {% if events.has_previous %}
+              <a href="?page={{ events.previous_page_number }}" class="btn-ghost" style="font-size:.855rem;">← Previous</a>
+            {% endif %}
+            <span style="color:var(--muted);font-size:.855rem;align-self:center;">Page {{ events.number }} of {{ events.paginator.num_pages }}</span>
+            {% if events.has_next %}
+              <a href="?page={{ events.next_page_number }}" class="btn-ghost" style="font-size:.855rem;">Next →</a>
+            {% endif %}
+          </div>
+        {% endif %}
+
+      {% else %}
+        <div class="empty-state">
+          <span class="empty-icon"><i class="bi bi-calendar-x"></i></span>
+          <h4>No events yet</h4>
+          <p>{{ organiser.username }} hasn't created any events yet. Follow them to get notified when they do.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

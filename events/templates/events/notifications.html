@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Notifications — Eventify{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <div class="section-label">Your activity</div>
+    <h1 style="font-size:2rem;">🔔 Notifications</h1>
+  </div>
+</div>
+
+<div class="container mt-5 mb-5" style="max-width:680px;">
+
+  {% if notifications %}
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      {% for notif in notifications %}
+        <div style="
+          background:var(--card-bg);border:1px solid var(--border);
+          border-radius:var(--radius-sm);padding:16px;
+          display:flex;align-items:flex-start;gap:14px;
+          border-left:3px solid {% if not notif.is_read %}var(--brand){% else %}var(--border){% endif %};
+          transition:border-color .2s;
+        ">
+          <div style="font-size:1.4rem;flex-shrink:0;line-height:1.3;">
+            {% if notif.notif_type == 'event_approved' %}✅
+            {% elif notif.notif_type == 'event_rejected' %}❌
+            {% elif notif.notif_type == 'new_registration' %}🎟️
+            {% elif notif.notif_type == 'waitlist_spot' %}🎉
+            {% elif notif.notif_type == 'new_review' %}⭐
+            {% elif notif.notif_type == 'new_follower' %}👤
+            {% elif notif.notif_type == 'event_reminder' %}⏰
+            {% else %}🎪{% endif %}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:.9rem;margin-bottom:3px;">{{ notif.title }}</div>
+            <div style="color:var(--muted);font-size:.835rem;line-height:1.5;">{{ notif.message }}</div>
+            <div style="color:var(--muted);font-size:.75rem;margin-top:6px;">{{ notif.created_at|timesince }} ago</div>
+          </div>
+          {% if notif.link %}
+            <a href="{{ notif.link }}" class="btn-ghost" style="font-size:.78rem;padding:5px 12px;flex-shrink:0;">View →</a>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon"><i class="bi bi-bell-slash"></i></span>
+      <h4>All caught up!</h4>
+      <p>Notifications will appear here when people register for your events, leave reviews, or when spots open on your waitlist.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -84,23 +84,23 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'Eventify <noreply@eventify.co.ke>'
 # # ── FEATURE 3: Email settings ──────────────
 # #
 # # During development — emails print to your terminal (no SMTP needed)
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-#
-# # When you're ready to send real emails, swap to Gmail:
-# # EMAIL_BACKEND   = 'django.core.mail.backends.smtp.EmailBackend'
-# # EMAIL_HOST      = 'smtp.gmail.com'
-# # EMAIL_PORT      = 587
-# # EMAIL_USE_TLS   = True
-# # EMAIL_HOST_USER = 'your@gmail.com'
-# # EMAIL_HOST_PASSWORD = 'your_app_password'   # Google App Password, NOT your real password
-#
-# DEFAULT_FROM_EMAIL = 'Eventify <noreply@eventify.co.ke>'
-#
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+#When you're ready to send real emails, swap to Gmail:
+EMAIL_BACKEND   = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST      = 'smtp.gmail.com'
+EMAIL_PORT      = 587
+EMAIL_USE_TLS   = True
+EMAIL_HOST_USER = 'samstorm855@gmail.com'
+EMAIL_HOST_PASSWORD = 'tffm fpyp rktq xpxp'   # Google App Password, NOT your real password
+
+DEFAULT_FROM_EMAIL = 'Eventify <noreply@eventify.co.ke>'
+
 # # ── ADMIN DASHBOARD: your email ─────────────
 ADMIN_EMAIL = 'admin@eventify.co.ke'
 
@@ -110,20 +110,20 @@ ADMIN_EMAIL = 'admin@eventify.co.ke'
 MPESA_CONSUMER_KEY    = 'HvzHVkFsU09KnLAxH5zTzM6A1RQ6pffq3k6OIALmdJ8jfA1G'
 MPESA_CONSUMER_SECRET = '8AO37Y4jgjaj0RYzakTAd4jXKhHnfJLmi9bcsq99hoAbAxRztrZA08ovh01VrrQL'
 
-# The till number or paybill number for your sandbox app
 # Default sandbox shortcode is 174379
 MPESA_SHORTCODE = '174379'
 
-# The Lipa Na M-Pesa Online PassKey
-# Default sandbox passkey — get the real one from the Daraja portal
 MPESA_PASSKEY = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
 
-# The URL Safaricom will POST the payment result to.
-# During development: use ngrok to get a public URL
 # Example: https://abc123.ngrok.io/mpesa/callback/
 MPESA_CALLBACK_URL = 'https://sandbox.safaricom.co.ke/mpesa/callback/'
 
 # Switch to 'live' when going to production
-# (also change sandbox URLs in mpesa.py to production URLs)
+
 MPESA_ENV = 'sandbox'
 
+
+
+PAYPAL_CLIENT_ID = 'your_client_id_here'
+PAYPAL_SECRET    = 'your_secret_here'
+PAYPAL_BASE_URL  = 'https://api-m.sandbox.paypal.com'

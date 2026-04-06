@@ -1,8 +1,6 @@
 # events/feature_views.py
-# =============================================
 #  Views for all 7 new features.
 #  Import these in your events/urls.py
-# =============================================
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
@@ -13,7 +11,18 @@ from django.db.models import Count, Sum, Avg
 from django.core.mail import send_mail
 from django.conf import settings
 
+from fix import event
 from .models import Event, Registration, EventReview, Waitlist
+
+import qrcode
+import io
+import csv
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+
+from django.core.mail import EmailMultiAlternatives
+from email.mime.image import MIMEImage
+
 
 
 # ═══════════════════════════════════════════
@@ -31,12 +40,12 @@ def submit_review(request, event_pk):
     # Only registered attendees can review
     if not Registration.objects.filter(event=event, user=request.user).exists():
         messages.error(request, "You can only review events you attended.")
-        return redirect('event_detail', pk=event_pk)
+        return redirect('event_detail', slug=event.slug)
 
     # Only one review per person
     if EventReview.objects.filter(event=event, author=request.user).exists():
         messages.warning(request, "You've already reviewed this event.")
-        return redirect('event_detail', pk=event_pk)
+        return redirect('event_detail',slug=event.slug )
 
     if request.method == 'POST':
         rating  = request.POST.get('rating')
@@ -45,11 +54,11 @@ def submit_review(request, event_pk):
         # Validate
         if not rating or not rating.isdigit() or not (1 <= int(rating) <= 5):
             messages.error(request, "Please choose a rating between 1 and 5.")
-            return redirect('event_detail', pk=event_pk)
+            return redirect('event_detail', slug=event.slug)
 
         if len(comment) < 10:
             messages.error(request, "Please write at least 10 characters.")
-            return redirect('event_detail', pk=event_pk)
+            return redirect('event_detail', slug=event.slug)
 
         EventReview.objects.create(
             event   = event,
@@ -59,7 +68,7 @@ def submit_review(request, event_pk):
         )
         messages.success(request, "✅ Your review has been posted!")
 
-    return redirect('event_detail', pk=event_pk)
+    return redirect('event_detail', slug=event.slug)
 
 
 @login_required
@@ -69,7 +78,7 @@ def delete_review(request, review_pk):
     event_pk = review.event.pk
     review.delete()
     messages.success(request, "Review deleted.")
-    return redirect('event_detail', pk=event_pk)
+    return redirect('event_detail', slug=event.slug)
 
 
 # ═══════════════════════════════════════════
@@ -77,18 +86,11 @@ def delete_review(request, review_pk):
 #  (called automatically inside event_register view)
 # ═══════════════════════════════════════════
 
+
 def send_registration_confirmation(user, event, registration):
-    """
-    Sends a confirmation email when someone registers.
-    Call this inside your event_register view right after saving.
-
-    Configure SMTP in settings.py to make this actually send.
-    Until then, Django prints the email to the terminal (EMAIL_BACKEND below).
-    """
-
     subject = f"🎟️ You're registered: {event.title}"
 
-    message = f"""
+    text_message = f"""
 Hi {user.first_name or user.username},
 
 Great news — you're officially registered for:
@@ -97,8 +99,8 @@ Great news — you're officially registered for:
   📆 {event.date.strftime('%A, %B %d, %Y at %I:%M %p')}
   📍 {event.location}
 
-Your check-in code:  {registration.check_in_code}
-Keep this safe — the organiser will use it to check you in at the door.
+Your check-in code: {registration.check_in_code}
+Your QR code is attached — show it at the door.
 
 {'This event is FREE.' if event.price == 0 else f'Amount paid: KES {event.price}'}
 
@@ -106,42 +108,117 @@ See you there!
 — The Eventify Team
     """.strip()
 
-    send_mail(
-        subject         = subject,
-        message         = message,
-        from_email      = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@eventify.co.ke'),
-        recipient_list  = [user.email],
-        fail_silently   = True,   # Don't crash the site if email fails
-    )
+    html_message = f"""
+    <div style="font-family:Arial,sans-serif;max-width:500px;margin:auto;padding:20px;">
+      <h2 style="color:#3A86FF;">🎟️ You're registered!</h2>
+      <p>Hi {user.first_name or user.username},</p>
+      <p>Great news — you're officially registered for:</p>
 
+      <div style="background:#f5f5f5;border-radius:10px;padding:16px;margin:16px 0;">
+        <strong style="font-size:1.1rem;">{event.title}</strong><br><br>
+        📆 {event.date.strftime('%A, %B %d, %Y at %I:%M %p')}<br>
+        📍 {event.location}<br><br>
+        {'🆓 This event is FREE.' if event.price == 0 else f'💳 Amount paid: KES {event.price}'}
+      </div>
+
+      <p>Your check-in code:</p>
+      <div style="background:#3A86FF;color:#fff;font-size:1.6rem;font-weight:700;letter-spacing:4px;
+                  text-align:center;padding:16px;border-radius:10px;margin:8px 0;">
+        {registration.check_in_code}
+      </div>
+
+      <p style="text-align:center;color:#555;">Show this QR code at the door:</p>
+      <img src="cid:qrcode" style="width:200px;height:200px;display:block;margin:16px auto;border-radius:10px;">
+
+      <p style="color:#999;font-size:.8rem;text-align:center;margin-top:24px;">
+        See you there! — The Eventify Team
+      </p>
+    </div>
+    """
+
+    # Generate QR code
+    qr = qrcode.make(registration.check_in_code)
+    buffer = io.BytesIO()
+    qr.save(buffer, format='PNG')
+    buffer.seek(0)
+
+    # Build email
+    email = EmailMultiAlternatives(
+        subject    = subject,
+        body       = text_message,
+        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@eventify.co.ke'),
+        to         = [user.email],
+    )
+    email.attach_alternative(html_message, "text/html")
+
+    # Attach QR code inline
+    qr_image = MIMEImage(buffer.read())
+    qr_image.add_header('Content-ID', '<qrcode>')
+    qr_image.add_header('Content-Disposition', 'inline', filename='checkin_qr.png')
+    email.attach(qr_image)
+
+    email.send(fail_silently=True)
 
 def send_waitlist_notification(user, event):
-    """Email sent when a waitlist spot opens up"""
+    # Get their registration check-in code
+    registration = Registration.objects.get(event=event, user=user)
 
-    subject = f"🎉 A spot opened up: {event.title}"
-    message = f"""
+    subject = f"🎉 You're in! – {event.title}"
+
+    text_message = f"""
 Hi {user.first_name or user.username},
 
-Good news! A spot just opened up for:
+Great news! A spot just opened up and you've been automatically registered for:
 
   📅 {event.title}
   📆 {event.date.strftime('%A, %B %d, %Y at %I:%M %p')}
   📍 {event.location}
 
-You have 24 hours to register before the next person in line is notified.
-Visit Eventify now to claim your spot!
+Your check-in code: {registration.check_in_code}
+Your QR code is attached — show it at the door.
 
 — The Eventify Team
     """.strip()
 
-    send_mail(
-        subject        = subject,
-        message        = message,
-        from_email     = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@eventify.co.ke'),
-        recipient_list = [user.email],
-        fail_silently  = True,
-    )
+    html_message = f"""
+    <div style="font-family:Arial,sans-serif;max-width:500px;margin:auto;padding:20px;">
+      <h2 style="color:#3A86FF;">🎉 You're registered!</h2>
+      <p>Hi {user.first_name or user.username},</p>
+      <p>A spot opened up and you've been automatically registered for:</p>
+      <div style="background:#f5f5f5;border-radius:10px;padding:16px;margin:16px 0;">
+        <strong>{event.title}</strong><br>
+        📆 {event.date.strftime('%A, %B %d, %Y at %I:%M %p')}<br>
+        📍 {event.location}
+      </div>
+      <p>Your check-in code: <strong style="font-size:1.4rem;letter-spacing:3px;">{registration.check_in_code}</strong></p>
+      <p>Show the QR code below at the door:</p>
+      <img src="cid:qrcode" style="width:200px;height:200px;display:block;margin:16px auto;">
+      <p style="color:#999;font-size:.8rem;text-align:center;">— The Eventify Team</p>
+    </div>
+    """
 
+    # Generate QR code from check-in code
+    qr = qrcode.make(registration.check_in_code)
+    buffer = io.BytesIO()
+    qr.save(buffer, format='PNG')
+    buffer.seek(0)
+
+    # Build email
+    email = EmailMultiAlternatives(
+        subject       = subject,
+        body          = text_message,
+        from_email    = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@eventify.co.ke'),
+        to            = [user.email],
+    )
+    email.attach_alternative(html_message, "text/html")
+
+    # Attach QR code image inline
+    qr_image = MIMEImage(buffer.read())
+    qr_image.add_header('Content-ID', '<qrcode>')
+    qr_image.add_header('Content-Disposition', 'inline', filename='checkin_qr.png')
+    email.attach(qr_image)
+
+    email.send(fail_silently=True)
 
 # ═══════════════════════════════════════════
 #  FEATURE 5 — WAITLIST
@@ -155,12 +232,12 @@ def join_waitlist(request, event_pk):
     # Already registered? No need for waitlist
     if Registration.objects.filter(event=event, user=request.user).exists():
         messages.info(request, "You're already registered for this event!")
-        return redirect('event_detail', pk=event_pk)
+        return redirect('event_detail', slug=event.slug)
 
     # Already on the waitlist?
     if Waitlist.objects.filter(event=event, user=request.user).exists():
         messages.warning(request, "You're already on the waitlist.")
-        return redirect('event_detail', pk=event_pk)
+        return redirect('event_detail', slug=event.slug)
 
     # Event must actually be full to join waitlist
     if not event.is_full():
@@ -173,7 +250,7 @@ def join_waitlist(request, event_pk):
         f"You're #{entry.position()} on the waitlist. "
         "We'll email you if a spot opens up."
     )
-    return redirect('event_detail', pk=event_pk)
+    return redirect('event_detail', slug=event.slug)
 
 
 @login_required
@@ -185,26 +262,27 @@ def leave_waitlist(request, event_pk):
     if request.method == 'POST':
         entry.delete()
         messages.success(request, "You've been removed from the waitlist.")
-        return redirect('event_detail', pk=event_pk)
+        return redirect('event_detail', slug=event.slug)
 
     return render(request, 'events/leave_waitlist_confirm.html', {'event': event})
 
 
 def notify_next_on_waitlist(event):
-    """
-    Called automatically when a registration is cancelled.
-    Finds the first person on the waitlist and emails them.
-    """
     next_entry = Waitlist.objects.filter(
         event=event,
-        notified_at__isnull=True   # Hasn't been notified yet
+        notified_at__isnull=True
     ).first()
 
     if next_entry:
-        next_entry.notified_at = timezone.now()
-        next_entry.save()
+        # Actually register them
+        Registration.objects.get_or_create(
+            event=event,
+            user=next_entry.user,
+        )
+        # Remove from waitlist
+        next_entry.delete()
+        # Notify them
         send_waitlist_notification(next_entry.user, event)
-
 
 # ═══════════════════════════════════════════
 #  FEATURE 6 — CHECK-IN SYSTEM
@@ -221,7 +299,7 @@ def checkin_dashboard(request, event_pk):
 
     if event.organizer != request.user:
         messages.error(request, "Only the organiser can access the check-in page.")
-        return redirect('event_detail', pk=event_pk)
+        return redirect('event_detail', slug=event.slug)
 
     registrations = Registration.objects.filter(event=event).select_related('user').order_by('user__username')
 
@@ -376,3 +454,44 @@ def admin_dashboard(request):
         'recent_registrations': recent_registrations,
         'all_events':           all_events,
     })
+
+
+# new addition
+@login_required
+def ticket_qr_code(request, registration_pk):
+    """Generates a QR code image for a registration"""
+    reg = get_object_or_404(Registration, pk=registration_pk, user=request.user)
+
+    # The QR code encodes the check-in code
+    qr = qrcode.QRCode(box_size=10, border=4)
+    qr.add_data(reg.check_in_code)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="#FF4D6D", back_color="#0D0D0D")
+
+    # Send it directly as an image response
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG')
+    buffer.seek(0)
+
+    return HttpResponse(buffer, content_type='image/png')
+
+def export_attendees(request, event_pk):
+    event = get_object_or_404(Event, pk=event_pk)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{event.title}_attendees.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Name', 'Email', 'Registered At'])
+
+    registrations = Registration.objects.filter(event=event)
+
+    for reg in registrations:
+        writer.writerow([
+            reg.user.get_full_name() or reg.user.username,
+            reg.user.email,
+            reg.registered_at.strftime('%Y-%m-%d %H:%M')
+        ])
+
+    return response

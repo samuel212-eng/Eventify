@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Analytics: {{ event.title }} — Eventify{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <a href="{% url 'event_detail' event.slug %}" style="color:var(--muted);font-size:.875rem;">← Back to event</a>
+    <div class="section-label mt-2">Organiser Dashboard</div>
+    <h1 style="font-size:1.9rem;">📊 {{ event.title|truncatechars:40 }}</h1>
+    <p style="color:var(--muted);font-size:.875rem;">{{ event.date|date:"M d, Y · g:i A" }} · {{ event.location }}</p>
+  </div>
+</div>
+
+<div class="container my-5">
+
+  <!-- KPI Cards -->
+  <div class="row g-3 mb-5">
+    {% for value,label,icon,color in kpis %}
+    <div class="col-6 col-lg-3">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;border-left:3px solid {{ color }};">
+        <div style="font-size:1.5rem;margin-bottom:4px;">{{ icon }}</div>
+        <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:{{ color }};line-height:1;">{{ value }}</div>
+        <div style="color:var(--muted);font-size:.8rem;margin-top:4px;">{{ label }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="row g-4 mb-5">
+    <!-- Registrations chart -->
+    <div class="col-lg-8">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+        <h5 style="font-family:'Syne',sans-serif;margin-bottom:20px;">Registrations — Last 14 Days</h5>
+        <div style="position:relative;height:260px;">
+          <canvas id="regChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary stats -->
+    <div class="col-lg-4">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+        <h5 style="font-family:'Syne',sans-serif;margin-bottom:20px;">Event Health</h5>
+
+        <!-- Capacity fill -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between mb-1" style="font-size:.82rem;color:var(--muted);">
+            <span>Capacity filled</span>
+            <span style="color:var(--text);">{{ event.capacity_percentage }}%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:{{ event.capacity_percentage }}%;background:{% if event.capacity_percentage >= 90 %}var(--danger){% elif event.capacity_percentage >= 70 %}var(--warning){% else %}var(--success){% endif %};"></div></div>
+        </div>
+
+        <!-- Check-in rate -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between mb-1" style="font-size:.82rem;color:var(--muted);">
+            <span>Check-in rate</span>
+            <span style="color:var(--text);">{{ checkin_rate }}%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:{{ checkin_rate }}%;background:var(--info);"></div></div>
+        </div>
+
+        <!-- Conversion rate -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between mb-1" style="font-size:.82rem;color:var(--muted);">
+            <span>View → Register rate</span>
+            <span style="color:var(--text);">{{ conversion_rate }}%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:{{ conversion_rate }};background:var(--brand);"></div></div>
+        </div>
+
+        {% if avg_rating %}
+          <div style="background:var(--surface);border-radius:var(--radius-sm);padding:14px;text-align:center;">
+            <div style="color:var(--warning);font-size:1.2rem;">★★★★★</div>
+            <div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--brand);">{{ avg_rating }}</div>
+            <div style="color:var(--muted);font-size:.78rem;">{{ review_count }} review{{ review_count|pluralize }}</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick links -->
+  <div class="d-flex gap-3 flex-wrap">
+    <a href="{% url 'checkin_dashboard' event.pk %}" class="btn-brand"><i class="bi bi-qr-code-scan"></i>Check-In Dashboard</a>
+    <a href="{% url 'export_attendees' event.pk %}" class="btn-outline-brand"><i class="bi bi-download"></i>Export Attendees CSV</a>
+    <a href="{% url 'event_edit' event.pk %}" class="btn-ghost"><i class="bi bi-pencil"></i>Edit Event</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+new Chart(document.getElementById('regChart'), {
+  type: 'bar',
+  data: {
+    labels:   {{ chart_labels|safe }},
+    datasets: [{
+      label: 'Registrations',
+      data:  {{ chart_data|safe }},
+      backgroundColor: 'rgba(255,77,109,.6)',
+      borderColor:     '#FF4D6D',
+      borderWidth: 1.5,
+      borderRadius: 5,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: '#242424' }, ticks: { color: '#888', font: { size: 10 } } },
+      y: { grid: { color: '#242424' }, ticks: { color: '#888', stepSize: 1 }, beginAtZero: true },
+    }
+  }
+});
+</script>
+{% endblock %}

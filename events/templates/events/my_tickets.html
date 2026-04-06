@@ -3,44 +3,142 @@
 
 {% block content %}
 <div class="page-hero">
-  <div class="container">
-    <h1 style="font-size:2rem;">🎟️ My Tickets</h1>
-    <p style="color:var(--muted);">Events you're registered for</p>
+  <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+      <div class="section-label">Your bookings</div>
+      <h1 style="font-size:2rem;">🎟️ My Tickets</h1>
+      <p style="color:var(--muted);font-size:.9rem;">{{ registrations|length }} booking{{ registrations|length|pluralize }}</p>
+    </div>
+    <!-- Attendance streak -->
+    {% if streak >= 2 %}
+      <div style="background:rgba(255,190,11,.1);border:1px solid rgba(255,190,11,.25);border-radius:var(--radius-sm);padding:12px 20px;text-align:center;">
+        <div style="font-size:1.5rem;">🔥</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--warning);">{{ streak }}-event streak</div>
+        <div style="color:var(--muted);font-size:.75rem;">Keep it up!</div>
+      </div>
+    {% endif %}
   </div>
 </div>
 
 <div class="container mt-5 mb-5">
-  {% if registrations %}
-    <div class="row g-4">
-      {% for reg in registrations %}
-        <div class="col-md-6 col-lg-4">
-          <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem; height:100%;">
-            <div class="tag mb-2">{{ reg.event.category.name|default:"Event" }}</div>
-            <h5 style="font-family:'Syne',sans-serif; margin-bottom:.75rem;">
-              <a href="{% url 'event_detail' reg.event.pk %}" style="color:var(--text);">{{ reg.event.title }}</a>
-            </h5>
-            <div style="color:var(--muted); font-size:.875rem; line-height:2; margin-bottom:1rem;">
-              <div><i class="bi bi-calendar3 me-1" style="color:var(--brand);"></i>{{ reg.event.date|date:"M d, Y · g:i A" }}</div>
-              <div><i class="bi bi-geo-alt me-1"   style="color:var(--brand);"></i>{{ reg.event.location }}</div>
-              <div><i class="bi bi-clock me-1"     style="color:var(--brand);"></i>Registered {{ reg.registered_at|date:"M d, Y" }}</div>
+
+  <!-- UPCOMING tickets -->
+  {% if upcoming_regs %}
+    <h3 style="font-size:1.3rem;margin-bottom:20px;color:var(--success);">
+      <i class="bi bi-calendar-check me-2"></i>Upcoming ({{ upcoming_regs|length }})
+    </h3>
+    <div class="row g-4 mb-5">
+      {% for reg in upcoming_regs %}
+        <div class="col-md-6 col-lg-4 scroll-reveal">
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;height:100%;">
+
+            <!-- Event colour strip -->
+            <div style="height:5px;background:linear-gradient(135deg,var(--brand),var(--brand-dark));"></div>
+
+            <div style="padding:20px;">
+              <!-- Category + title -->
+              {% if reg.event.category %}<div class="tag mb-2">{{ reg.event.category.name }}</div>{% endif %}
+              <h5 style="font-family:'Syne',sans-serif;font-size:1rem;margin-bottom:10px;line-height:1.3;">
+                <a href="{% url 'event_detail' reg.event.slug %}" style="color:var(--text);">{{ reg.event.title }}</a>
+              </h5>
+
+              <div style="color:var(--muted);font-size:.8rem;line-height:2;margin-bottom:14px;">
+                <div><i class="bi bi-calendar3 me-1" style="color:var(--brand);"></i>{{ reg.event.date|date:"l, M d, Y · g:i A" }}</div>
+                <div><i class="bi bi-geo-alt me-1"   style="color:var(--brand);"></i>{{ reg.event.location }}</div>
+              </div>
+
+              <!-- Check-in code -->
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center;margin-bottom:14px;">
+                <div style="color:var(--muted);font-size:.72rem;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Your Check-In Code</div>
+                <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:3px;color:var(--brand);">{{ reg.check_in_code }}</div>
+                <!-- QR Code -->
+                <img src="{% url 'ticket_qr' reg.pk %}" alt="QR Code"
+                     style="width:110px;height:110px;border-radius:8px;margin-top:10px;display:block;margin-left:auto;margin-right:auto;">
+                <div style="color:var(--muted);font-size:.7rem;margin-top:6px;">Scan this at the door</div>
+              </div>
+
+              <!-- Countdown to event -->
+              <div class="countdown-wrap mb-3" id="cd_{{ reg.pk }}">
+                <div class="cd-unit"><div class="cd-num" id="d_{{ reg.pk }}">--</div><div class="cd-lbl">Days</div></div>
+                <div class="cd-unit"><div class="cd-num" id="h_{{ reg.pk }}">--</div><div class="cd-lbl">Hrs</div></div>
+                <div class="cd-unit"><div class="cd-num" id="m_{{ reg.pk }}">--</div><div class="cd-lbl">Min</div></div>
+                <div class="cd-unit"><div class="cd-num" id="s_{{ reg.pk }}">--</div><div class="cd-lbl">Sec</div></div>
+              </div>
+
+              <!-- Actions -->
+              <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'event_detail' reg.event.slug %}" class="btn-ghost" style="font-size:.8rem;padding:7px 14px;">
+                  <i class="bi bi-eye"></i>View Event
+                </a>
+                <a href="{% url 'cancel_registration' reg.pk %}"
+                   style="color:var(--muted);font-size:.8rem;align-self:center;margin-left:4px;">
+                  Cancel
+                </a>
+              </div>
             </div>
-            <div class="d-flex gap-2">
-              <a href="{% url 'event_detail' reg.event.pk %}" class="btn btn-outline-brand btn-sm">View Event</a>
-              <a href="{% url 'cancel_registration' reg.pk %}"
-                 style="color:var(--muted); font-size:.8rem; align-self:center; margin-left:.5rem;">
-                Cancel
-              </a>
+          </div>
+        </div>
+
+        <!-- Countdown script for each ticket -->
+        <script>
+        (function(){
+          const target=new Date("{{ reg.event.date|date:'Y-m-d' }}T{{ reg.event.date|date:'H:i:s' }}");
+          function tick(){
+            const diff=target-new Date();
+            if(diff<=0){
+              const el=document.getElementById('cd_{{ reg.pk }}');
+              if(el)el.innerHTML='<div style="color:var(--brand);font-weight:700;font-size:.82rem;text-align:center;width:100%;">🎉 Event is happening now!</div>';
+              return;
+            }
+            const d=Math.floor(diff/864e5),h=Math.floor((diff%864e5)/36e5),m=Math.floor((diff%36e5)/6e4),s=Math.floor((diff%6e4)/1e3);
+            ['d','h','m','s'].forEach((k,i)=>{const el=document.getElementById(k+'_{{ reg.pk }}');if(el)el.textContent=String([d,h,m,s][i]).padStart(2,'0');});
+            setTimeout(tick,1000);
+          }
+          tick();
+        })();
+        </script>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- PAST tickets -->
+  {% if past_regs %}
+    <h3 style="font-size:1.3rem;margin-bottom:20px;color:var(--muted);">
+      <i class="bi bi-clock-history me-2"></i>Past Events ({{ past_regs|length }})
+    </h3>
+    <div class="row g-3">
+      {% for reg in past_regs %}
+        <div class="col-md-6">
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;display:flex;align-items:center;gap:14px;opacity:.75;">
+            <div style="width:44px;height:44px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">🎪</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ reg.event.title }}</div>
+              <div style="color:var(--muted);font-size:.78rem;">{{ reg.event.date|date:"M d, Y" }}</div>
             </div>
+            <a href="{% url 'event_detail' reg.event.slug %}#reviews" class="btn-ghost" style="font-size:.75rem;padding:5px 12px;flex-shrink:0;">
+              <i class="bi bi-star"></i>Review
+            </a>
           </div>
         </div>
       {% endfor %}
     </div>
-  {% else %}
-    <div class="text-center py-5" style="color:var(--muted);">
-      <i class="bi bi-ticket" style="font-size:3.5rem; display:block; margin-bottom:1rem; opacity:.4;"></i>
-      <p style="margin-bottom:1.5rem;">You haven't registered for any events yet.</p>
-      <a href="{% url 'event_list' %}" class="btn btn-brand">Browse Events</a>
+  {% endif %}
+
+  <!-- EMPTY state -->
+  {% if not registrations %}
+    <div class="empty-state">
+      <span class="empty-icon"><i class="bi bi-ticket"></i></span>
+      <h4>No tickets yet</h4>
+      <p>When you register for events, your tickets will appear here with QR codes for easy check-in.</p>
+      <a href="{% url 'event_list' %}" class="btn-brand"><i class="bi bi-grid-3x3-gap"></i>Find Events</a>
     </div>
   {% endif %}
 </div>
+
+<style>
+.countdown-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;display:flex;gap:6px;justify-content:center;}
+.cd-unit{text-align:center;min-width:46px;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-xs);padding:7px 4px;}
+.cd-num{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:var(--brand);line-height:1;}
+.cd-lbl{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+</style>
 {% endblock %}

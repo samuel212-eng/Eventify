@@ -1,166 +1,186 @@
 {% extends "base.html" %}
-{% block title %}Eventify — Discover Amazing Events{% endblock %}
+{% block title %}Eventify — Discover Extraordinary Events in Kenya{% endblock %}
 
 {% block content %}
 
-<!-- HERO SECTION -->
-<section style="
-  background: radial-gradient(ellipse at top left, #3D0020 0%, #0D0D0D 55%);
-  padding: 6rem 0 5rem;
-  position: relative;
-  overflow: hidden;
-">
-  <!-- Background decoration -->
-  <div style="
-    position:absolute; top:-100px; right:-100px;
-    width:500px; height:500px; border-radius:50%;
-    background: radial-gradient(circle, rgba(255,77,109,0.08) 0%, transparent 70%);
-    pointer-events:none;
-  "></div>
+<!-- ═══ HERO with real photography ═══ -->
+<section style="position:relative;min-height:88vh;display:flex;align-items:center;overflow:hidden;padding:5rem 0 4rem;">
+  <div style="position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1600&q=80');background-size:cover;background-position:center;"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(10,10,10,.93) 0%,rgba(10,10,10,.75) 55%,rgba(10,10,10,.35) 100%);"></div>
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 15% 60%,rgba(255,77,109,.13) 0%,transparent 55%);"></div>
 
-  <div class="container text-center" style="position:relative; z-index:1;">
-    <div class="tag mb-4">🎉 The #1 Event Platform</div>
-    <h1 style="font-size:clamp(2.5rem,6vw,4.5rem); line-height:1.1; margin-bottom:1.5rem;">
-      Discover events that<br>
-      <span style="color:var(--brand)">move you.</span>
-    </h1>
-    <p style="color:var(--muted); font-size:1.2rem; max-width:520px; margin:0 auto 2.5rem;">
-      Browse concerts, workshops, meetups and more. Create your own and sell tickets — all in one place.
-    </p>
-    <div class="d-flex gap-3 justify-content-center flex-wrap">
-      <a href="{% url 'event_list' %}" class="btn btn-brand" style="padding:.8rem 2.2rem; font-size:1.05rem;">
-        Browse Events <i class="bi bi-arrow-right ms-1"></i>
-      </a>
-      {% if not user.is_authenticated %}
-        <a href="{% url 'signup' %}" class="btn btn-outline-brand" style="padding:.8rem 2.2rem; font-size:1.05rem;">
-          Host an Event
-        </a>
-      {% else %}
-        <a href="{% url 'event_create' %}" class="btn btn-outline-brand" style="padding:.8rem 2.2rem; font-size:1.05rem;">
-          + Create Event
-        </a>
-      {% endif %}
-    </div>
-  </div>
-</section>
-
-<!-- STATS -->
-<section class="container my-5">
-  <div class="row g-4 text-center">
-    <div class="col-6 col-md-3">
-      <div class="stat-box">
-        <div class="stat-number">{{ total_events }}+</div>
-        <div style="color:var(--muted); font-size:.875rem;">Live Events</div>
-      </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="stat-box">
-        <div class="stat-number">10K+</div>
-        <div style="color:var(--muted); font-size:.875rem;">Happy Attendees</div>
-      </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="stat-box">
-        <div class="stat-number">50+</div>
-        <div style="color:var(--muted); font-size:.875rem;">Cities</div>
-      </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="stat-box">
-        <div class="stat-number">100%</div>
-        <div style="color:var(--muted); font-size:.875rem;">Satisfaction</div>
+  <div class="container" style="position:relative;z-index:1;">
+    <div class="row">
+      <div class="col-lg-7 col-xl-6">
+        <div class="tag fade-up mb-4"><i class="bi bi-lightning-charge-fill"></i>#1 Event Platform in Kenya</div>
+        <h1 class="fade-up-1" style="font-size:clamp(2.4rem,5vw,4rem);line-height:1.07;margin-bottom:1.4rem;letter-spacing:-1px;">
+          Your next<br>
+          <span style="background:linear-gradient(135deg,var(--brand),#FF8FA3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">unforgettable</span><br>
+          experience starts here.
+        </h1>
+        <p class="fade-up-2" style="color:rgba(239,239,239,.8);font-size:1.05rem;max-width:460px;margin-bottom:2rem;line-height:1.75;">
+          Concerts, workshops, tech summits, food festivals — discover what's happening near you and book with M-Pesa in seconds.
+        </p>
+        <div class="d-flex gap-3 flex-wrap fade-up-3">
+          <a href="{% url 'event_list' %}" class="btn-brand" style="padding:13px 28px;font-size:1rem;"><i class="bi bi-grid-3x3-gap-fill"></i>Find Events</a>
+          <a href="{% url 'event_create' %}" class="btn-outline-brand" style="padding:13px 28px;font-size:1rem;border-color:rgba(255,255,255,.35);color:#fff !important;"><i class="bi bi-plus-circle"></i>Host an Event</a>
+        </div>
+        <div class="d-flex gap-4 mt-4 flex-wrap fade-up-4">
+          <span style="color:rgba(239,239,239,.6);font-size:.8rem;display:flex;align-items:center;gap:5px;"><i class="bi bi-shield-fill-check" style="color:var(--success);"></i>Verified Organisers</span>
+          <span style="color:rgba(239,239,239,.6);font-size:.8rem;display:flex;align-items:center;gap:5px;"><i class="bi bi-phone-fill" style="color:#19C878;"></i>M-Pesa &amp; PayPal</span>
+          <span style="color:rgba(239,239,239,.6);font-size:.8rem;display:flex;align-items:center;gap:5px;"><i class="bi bi-qr-code" style="color:var(--brand);"></i>Instant QR Tickets</span>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- UPCOMING EVENTS  -->
+<!-- ═══ STATS with animated counters ═══ -->
+<section class="container my-5 scroll-reveal">
+  <div class="row g-3">
+    {% for num,label,icon in stats %}
+      <div class="col-6 col-md-3">
+        <div class="stat-box">
+          <div style="font-size:1.6rem;margin-bottom:6px;">{{ icon }}</div>
+          <div class="stat-number counter" data-target="{{ num }}">0</div>
+          <div style="color:var(--muted);font-size:.8rem;margin-top:4px;">{{ label }}</div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ═══ CATEGORY CHIPS ═══ -->
+{% if categories %}
+<section class="container mb-5 scroll-reveal">
+  <div class="section-label">What are you into?</div>
+  <h2 style="font-size:1.7rem;margin-bottom:20px;">Browse by Category</h2>
+  <div class="chip-bar">
+    <a href="{% url 'event_list' %}" class="chip active">🎪 All Events</a>
+    {% for cat in categories %}<a href="{% url 'event_list' %}?category={{ cat.id }}" class="chip">{{ cat.name }}</a>{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ═══ UPCOMING EVENTS with skeleton loaders ═══ -->
 <section class="container mb-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 style="font-size:1.75rem;">Upcoming Events</h2>
-    <a href="{% url 'event_list' %}" style="color:var(--brand); font-weight:500;">
-      View all <i class="bi bi-arrow-right"></i>
-    </a>
+    <div>
+      <div class="section-label">Don't miss out</div>
+      <h2 style="font-size:1.7rem;">Upcoming Events</h2>
+    </div>
+    <a href="{% url 'event_list' %}" class="btn-outline-brand" style="padding:8px 20px;font-size:.82rem;">View All <i class="bi bi-arrow-right"></i></a>
   </div>
 
   {% if upcoming_events %}
     <div class="row g-4">
       {% for event in upcoming_events %}
-        <div class="col-md-6 col-lg-4">
-          <a href="{% url 'event_detail' event.pk %}" style="text-decoration:none; color:inherit;">
-            <div class="event-card">
-              {% if event.image %}
-                <img src="{{ event.image.url }}" alt="{{ event.title }}">
-              {% else %}
-                <div class="img-placeholder"><i class="bi bi-calendar-event"></i></div>
-              {% endif %}
-              <div class="card-body">
-                {% if event.category %}
-                  <div class="tag mb-2">{{ event.category.name }}</div>
-                {% endif %}
-                <h5 class="card-title">{{ event.title }}</h5>
-                <p style="color:var(--muted); font-size:.875rem; margin-bottom:.75rem;">
-                  <i class="bi bi-calendar3 me-1"></i>{{ event.date|date:"M d, Y · g:i A" }}
-                </p>
-                <p style="color:var(--muted); font-size:.875rem; margin-bottom:1rem;">
-                  <i class="bi bi-geo-alt me-1"></i>{{ event.location }}
-                </p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="price-tag">
-                    {% if event.price == 0 %}Free{% else %}${{ event.price }}{% endif %}
-                  </span>
-                  <span style="color:var(--muted); font-size:.8rem;">
-                    {{ event.spots_left }} spots left
-                  </span>
-                </div>
-              </div>
-            </div>
-          </a>
+        <div class="col-md-6 col-lg-4 scroll-reveal" style="transition-delay:{{ forloop.counter0 }}00ms;">
+          {% include "events/partials/event_card.html" %}
         </div>
       {% endfor %}
     </div>
   {% else %}
-    <div class="text-center py-5" style="color:var(--muted);">
-      <i class="bi bi-calendar-x" style="font-size:3rem; display:block; margin-bottom:1rem;"></i>
-      No events yet. <a href="{% url 'event_create' %}">Be the first to create one!</a>
+    <!-- Skeleton loading state -->
+    <div class="row g-4">
+      {% for i in "123456" %}
+        <div class="col-md-6 col-lg-4">
+          <div class="skel-card">
+            <div class="skeleton skel-img"></div>
+            <div class="skel-pad">
+              <div class="skeleton skel-line w40" style="margin-bottom:12px;"></div>
+              <div class="skeleton skel-line w80" style="margin-bottom:8px;"></div>
+              <div class="skeleton skel-line w60" style="margin-bottom:8px;"></div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="empty-state mt-4">
+      <span class="empty-icon">🎪</span>
+      <h4>No events yet — be the first!</h4>
+      <p>Create the first event on Eventify and start selling tickets in minutes.</p>
+      <a href="{% url 'event_create' %}" class="btn-brand"><i class="bi bi-plus-circle"></i>Create Event</a>
     </div>
   {% endif %}
 </section>
 
-<!-- CATEGORIES  -->
-{% if categories %}
-<section class="container mb-5">
-  <h2 style="font-size:1.75rem; margin-bottom:1.5rem;">Browse by Category</h2>
-  <div class="d-flex flex-wrap gap-3">
-    {% for cat in categories %}
-      <a href="{% url 'event_list' %}?category={{ cat.id }}"
-         class="btn btn-outline-brand">
-        {{ cat.name }}
-      </a>
+<!-- ═══ REAL REVIEWS (no fake testimonials) ═══ -->
+{% if real_reviews %}
+<section class="scroll-reveal" style="background:linear-gradient(135deg,rgba(255,77,109,.04),transparent 60%);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:4rem 0;margin-bottom:4rem;">
+  <div class="container">
+    <div class="text-center mb-4">
+      <div class="section-label">Real people, real experiences</div>
+      <h2 style="font-size:1.7rem;">What attendees are saying</h2>
+    </div>
+    <div class="row g-4">
+      {% for review in real_reviews %}
+        <div class="col-md-4">
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;height:100%;">
+            <div style="color:var(--warning);margin-bottom:10px;">
+              {% for i in "12345" %}{% if forloop.counter <= review.rating %}★{% else %}<span style="opacity:.2;">★</span>{% endif %}{% endfor %}
+            </div>
+            <p style="color:var(--muted-2);font-size:.875rem;line-height:1.7;margin-bottom:20px;font-style:italic;">"{{ review.comment|truncatechars:130 }}"</p>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:38px;height:38px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">{{ review.author.username|first|upper }}</div>
+              <div>
+                <div style="font-weight:600;font-size:.875rem;">{{ review.author.get_full_name|default:review.author.username }}</div>
+                <div style="color:var(--muted);font-size:.75rem;">Attended: {{ review.event.title|truncatechars:25 }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ═══ WHY EVENTIFY — problem/solution pairs ═══ -->
+<section class="container mb-5 scroll-reveal">
+  <div class="text-center mb-5">
+    <div class="section-label">Why switch</div>
+    <h2 style="font-size:1.7rem;">The old way vs. the Eventify way</h2>
+  </div>
+  <div class="row g-4">
+    {% for old,new in why_pairs %}
+      <div class="col-md-4">
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;height:100%;">
+          <div style="color:var(--danger);font-size:.8rem;font-weight:700;margin-bottom:6px;">❌ The old way</div>
+          <p style="color:var(--muted);font-size:.875rem;margin-bottom:16px;line-height:1.6;">{{ old }}</p>
+          <div style="color:var(--success);font-size:.8rem;font-weight:700;margin-bottom:6px;">✅ With Eventify</div>
+          <p style="color:var(--muted-2);font-size:.875rem;line-height:1.6;">{{ new }}</p>
+        </div>
+      </div>
     {% endfor %}
   </div>
 </section>
-{% endif %}
 
-<!-- CTA BANNER  -->
+<!-- ═══ CTA ═══ -->
 {% if not user.is_authenticated %}
-<section class="container mb-5">
-  <div style="
-    background: linear-gradient(135deg, #3D0020, #1A0010);
-    border: 1px solid rgba(255,77,109,0.3);
-    border-radius: 20px;
-    padding: 3rem 2rem;
-    text-align: center;
-  ">
-    <h2 style="font-size:2rem; margin-bottom:1rem;">Ready to host your event?</h2>
-    <p style="color:var(--muted); margin-bottom:2rem;">
-      Join thousands of organisers on Eventify. It's free to sign up.
-    </p>
-    <a href="{% url 'signup' %}" class="btn btn-brand" style="padding:.8rem 2.5rem; font-size:1.05rem;">
-      Get Started Free
-    </a>
+<section class="container mb-5 scroll-reveal">
+  <div style="background:linear-gradient(135deg,#2D0015,#180010);border:1px solid rgba(255,77,109,.2);border-radius:24px;padding:4rem 2rem;text-align:center;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-80px;right:-80px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(255,77,109,.12),transparent 70%);pointer-events:none;"></div>
+    <div class="tag mb-3" style="display:inline-flex;">🚀 Free to join</div>
+    <h2 style="font-size:2rem;margin-bottom:12px;">Ready to host your first event?</h2>
+    <p style="color:var(--muted-2);max-width:460px;margin:0 auto 28px;font-size:.95rem;line-height:1.7;">Accept M-Pesa payments, manage attendees, and grow your audience — all in one place.</p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <a href="{% url 'signup' %}" class="btn-brand" style="padding:13px 28px;font-size:1rem;"><i class="bi bi-rocket-takeoff"></i>Get Started Free</a>
+      <a href="{% url 'event_list' %}" class="btn-outline-brand" style="padding:13px 28px;font-size:1rem;"><i class="bi bi-eye"></i>Browse Events</a>
+    </div>
   </div>
 </section>
 {% endif %}
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function animCounter(el){
+  const target=parseInt(el.dataset.target);const step=target/90;let cur=0;
+  const t=setInterval(()=>{cur+=step;if(cur>=target){el.textContent=target.toLocaleString()+'+';clearInterval(t);}else el.textContent=Math.floor(cur).toLocaleString()+'+';},16);
+}
+const cObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting&&!e.target.dataset.counted){e.target.dataset.counted=1;animCounter(e.target);}});},{threshold:.5});
+document.querySelectorAll('.counter').forEach(el=>cObs.observe(el));
+</script>
 {% endblock %}

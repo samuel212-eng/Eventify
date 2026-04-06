@@ -66,7 +66,10 @@
             <i class="bi bi-check-circle me-1"></i> Save Changes
           {% endif %}
         </button>
-        <a href="{% if event %}{% url 'event_detail' event.pk %}{% else %}{% url 'event_list' %}{% endif %}"
+
+
+
+        <a href="{% if event %}{% url 'event_detail' event.slug %}{% else %}{% url 'event_list' %}{% endif %}"
            class="btn btn-outline-brand" style="padding:.7rem 2rem;">
           Cancel
         </a>

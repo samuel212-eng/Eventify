@@ -1,101 +1,217 @@
 {% extends "base.html" %}
-{% block title %}Browse Events — Eventify{% endblock %}
+{% block title %}Find Events — Eventify{% endblock %}
 
 {% block content %}
-
-<!-- Page header -->
 <div class="page-hero">
   <div class="container">
-    <h1 style="font-size:2.2rem; margin-bottom:.5rem;">Browse Events</h1>
-    <p style="color:var(--muted);">Find something amazing happening near you</p>
+    <div class="section-label">Discover</div>
+    <h1 style="font-size:2.2rem;margin-bottom:6px;">Find Events</h1>
+    <p style="color:var(--muted);font-size:.9rem;">
+      {% if events %}{{ events|length }} event{{ events|length|pluralize }} available{% if search %} for "<strong style="color:var(--text);">{{ search }}</strong>"{% endif %}{% endif %}
+    </p>
   </div>
 </div>
 
 <div class="container mt-4 mb-5">
 
-  <!--SEARCH & FILTER BAR -->
-  <form method="GET" class="row g-3 mb-5">
-    <div class="col-md-6">
-      <div class="input-group">
-        <span class="input-group-text" style="background:var(--surface); border-color:var(--border); color:var(--muted);">
-          <i class="bi bi-search"></i>
-        </span>
-        <input
-          type="text"
-          name="search"
-          class="form-control"
-          placeholder="Search events..."
-          value="{{ search }}"
-        >
+  <!-- FILTER BAR -->
+  <form method="GET" class="mb-5" id="filterForm">
+    <div class="row g-3 mb-3">
+      <div class="col-md-5">
+        <div style="position:relative;">
+          <i class="bi bi-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:.9rem;"></i>
+
+{#   search aoto complete#}
+        <div style="position:relative;">
+          <i class="bi bi-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:.9rem;z-index:1;"></i>
+          <input
+            type="text"
+            name="search"
+            id="searchInput"
+            class="form-control"
+            placeholder="Search events, locations..."
+            value="{{ search }}"
+            style="padding-left:38px !important;"
+            autocomplete="off"
+          >
+          <!-- Autocomplete dropdown -->
+          <div id="autocompleteBox" style="
+            display:none; position:absolute; top:calc(100% + 4px); left:0; right:0;
+            background:var(--card-bg); border:1px solid var(--border);
+            border-radius:var(--radius-sm); box-shadow:var(--shadow-md);
+            z-index:100; overflow:hidden;
+          "></div>
+        </div>
+
+        <script>
+        let acTimer = null;
+
+        document.getElementById('searchInput')?.addEventListener('input', function() {
+          clearTimeout(acTimer);
+          const q = this.value.trim();
+          const box = document.getElementById('autocompleteBox');
+
+          if (q.length < 2) { box.style.display = 'none'; return; }
+
+          acTimer = setTimeout(() => {
+            fetch(`/search/autocomplete/?q=${encodeURIComponent(q)}`)
+              .then(r => r.json())
+              .then(data => {
+                if (!data.results.length) { box.style.display = 'none'; return; }
+
+                box.innerHTML = data.results.map(r => `
+                  <a href="${r.url}" style="
+                    display:flex; align-items:center; justify-content:space-between;
+                    padding:10px 14px; text-decoration:none; color:var(--text);
+                    border-bottom:1px solid var(--border); font-size:.875rem;
+                    transition:background .15s;
+                  "
+                  onmouseover="this.style.background='var(--surface)'"
+                  onmouseout="this.style.background='transparent'">
+                    <div>
+                      <div style="font-weight:500;">${r.title}</div>
+                      <div style="color:var(--muted);font-size:.75rem;">${r.date}</div>
+                    </div>
+                    <div style="color:var(--brand);font-weight:700;font-size:.82rem;flex-shrink:0;">${r.price}</div>
+                  </a>
+                `).join('');
+
+                box.style.display = 'block';
+              });
+          }, 280);   // 280ms debounce — waits for user to stop typing
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', e => {
+          if (!e.target.closest('#searchInput') && !e.target.closest('#autocompleteBox')) {
+            document.getElementById('autocompleteBox').style.display = 'none';
+          }
+        });
+        </script>
+
+
+
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select name="category" class="form-select">
+          <option value="">All Categories</option>
+          {% for cat in categories %}<option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <select name="price" class="form-select">
+          <option value="">Any Price</option>
+          <option value="free" {% if selected_price == 'free' %}selected{% endif %}>Free</option>
+          <option value="paid" {% if selected_price == 'paid' %}selected{% endif %}>Paid</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <select name="when" class="form-select">
+          <option value="">Any Time</option>
+          <option value="today" {% if selected_when == 'today' %}selected{% endif %}>Today</option>
+          <option value="week"  {% if selected_when == 'week'  %}selected{% endif %}>This Week</option>
+        </select>
       </div>
     </div>
-    <div class="col-md-4">
-      <select name="category" class="form-select">
-        <option value="">All Categories</option>
-        {% for cat in categories %}
-          <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>
-            {{ cat.name }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-2">
-      <button type="submit" class="btn btn-brand w-100">Filter</button>
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+      <button type="submit" class="btn-brand" style="padding:9px 22px;font-size:.855rem;">
+        <i class="bi bi-funnel-fill"></i>Apply Filters
+      </button>
+      {% if search or selected_category or selected_price or selected_when %}
+        <a href="{% url 'event_list' %}" class="btn-ghost" style="padding:9px 18px;font-size:.855rem;">
+          <i class="bi bi-x-circle"></i>Clear All
+        </a>
+        <span style="color:var(--muted);font-size:.8rem;margin-left:4px;">Filters active</span>
+      {% endif %}
     </div>
   </form>
 
-  <!-- Results count -->
-  <p style="color:var(--muted); margin-bottom:1.5rem;">
-    {{ events|length }} event{{ events|length|pluralize }} found
-    {% if search %} for "<strong style="color:var(--text)">{{ search }}</strong>"{% endif %}
-  </p>
-
-  <!--EVENT GRID -->
-  {% if events %}
-    <div class="row g-4">
-      {% for event in events %}
-        <div class="col-md-6 col-lg-4">
-          <a href="{% url 'event_detail' event.pk %}" style="text-decoration:none; color:inherit;">
-            <div class="event-card">
-              {% if event.image %}
-                <img src="{{ event.image.url }}" alt="{{ event.title }}">
-              {% else %}
-                <div class="img-placeholder"><i class="bi bi-calendar-event"></i></div>
-              {% endif %}
-              <div class="card-body">
-                {% if event.category %}<div class="tag mb-2">{{ event.category.name }}</div>{% endif %}
-                <h5 class="card-title">{{ event.title }}</h5>
-                <p style="color:var(--muted); font-size:.875rem; margin-bottom:.5rem;">
-                  <i class="bi bi-calendar3 me-1"></i>{{ event.date|date:"M d, Y · g:i A" }}
-                </p>
-                <p style="color:var(--muted); font-size:.875rem; margin-bottom:1rem;">
-                  <i class="bi bi-geo-alt me-1"></i>{{ event.location }}
-                </p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="price-tag">
-                    {% if event.price == 0 %}Free{% else %}${{ event.price }}{% endif %}
-                  </span>
-                  {% if event.is_full %}
-                    <span style="color:#FF6B6B; font-size:.8rem; font-weight:600;">SOLD OUT</span>
-                  {% else %}
-                    <span style="color:var(--muted); font-size:.8rem;">
-                      {{ event.spots_left }} spots left
-                    </span>
-                  {% endif %}
-                </div>
-              </div>
+  <!-- SKELETON LOADERS (shown briefly via JS before events appear) -->
+  <div id="skeletons" class="row g-4" style="display:none !important;">
+    {% for i in "123456" %}
+      <div class="col-md-6 col-lg-4">
+        <div class="skel-card">
+          <div class="skeleton skel-img"></div>
+          <div class="skel-pad">
+            <div class="skeleton skel-line w40" style="margin-bottom:12px;height:12px;border-radius:50px;"></div>
+            <div class="skeleton skel-line w80" style="margin-bottom:8px;height:16px;"></div>
+            <div class="skeleton skel-line w60" style="margin-bottom:8px;"></div>
+            <div class="skeleton skel-line w40" style="margin-bottom:16px;"></div>
+            <div class="d-flex justify-content-between">
+              <div class="skeleton" style="width:80px;height:20px;border-radius:50px;"></div>
+              <div class="skeleton" style="width:60px;height:20px;border-radius:50px;"></div>
             </div>
-          </a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- EVENT RESULTS -->
+  {% if events %}
+    <div class="row g-4" id="eventResults">
+      {% for event in events %}
+        <div class="col-md-6 col-lg-4 scroll-reveal" style="transition-delay:{{ forloop.counter0|add:0 }}0ms;">
+          {% include "events/partials/event_card.html" %}
         </div>
       {% endfor %}
     </div>
+
+    <!-- PAGINATION -->
+    {% if events.has_other_pages %}
+      <div class="d-flex justify-content-center align-items-center gap-3 mt-5">
+        {% if events.has_previous %}
+          <a href="?page={{ events.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_when %}&when={{ selected_when }}{% endif %}"
+             class="btn-ghost" style="padding:9px 20px;font-size:.855rem;">
+            <i class="bi bi-arrow-left"></i>Previous
+          </a>
+        {% endif %}
+        <span style="color:var(--muted);font-size:.855rem;padding:8px 16px;background:var(--surface);border-radius:50px;border:1px solid var(--border);">
+          {{ events.number }} of {{ events.paginator.num_pages }}
+        </span>
+        {% if events.has_next %}
+          <a href="?page={{ events.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_price %}&price={{ selected_price }}{% endif %}{% if selected_when %}&when={{ selected_when }}{% endif %}"
+             class="btn-ghost" style="padding:9px 20px;font-size:.855rem;">
+            Next<i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+
   {% else %}
-    <div class="text-center py-5" style="color:var(--muted);">
-      <i class="bi bi-search" style="font-size:3rem; display:block; margin-bottom:1rem; opacity:.4;"></i>
-      <p>No events found. Try a different search.</p>
-      <a href="{% url 'event_list' %}" class="btn btn-outline-brand mt-2">Clear filters</a>
+    <div class="empty-state">
+      <span class="empty-icon"><i class="bi bi-calendar-x"></i></span>
+      <h4>No events found</h4>
+      <p>
+        {% if search %}No events match "<strong>{{ search }}</strong>". Try different keywords or remove some filters.
+        {% else %}No events match your current filters. Try adjusting them.{% endif %}
+      </p>
+      <div class="d-flex gap-2 justify-content-center flex-wrap">
+        <a href="{% url 'event_list' %}" class="btn-outline-brand" style="font-size:.855rem;">
+          <i class="bi bi-arrow-counterclockwise"></i>Clear filters
+        </a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'event_create' %}" class="btn-brand" style="font-size:.855rem;">
+            <i class="bi bi-plus-circle"></i>Create one
+          </a>
+        {% endif %}
+      </div>
     </div>
   {% endif %}
 </div>
 
+<style>
+/* WhatsApp share button on cards */
+.card-share-btn{
+  position:absolute;bottom:10px;right:10px;
+  background:rgba(0,0,0,.65);backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.15);
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:#25D366;font-size:.95rem;
+  opacity:0;transition:opacity .2s;z-index:3;
+}
+.event-card:hover .card-share-btn{opacity:1;}
+</style>
 {% endblock %}

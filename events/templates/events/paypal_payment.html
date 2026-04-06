@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Pay with PayPal — {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="container my-5" style="max-width:520px;">
+  <div style="background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:2.5rem;">
+
+    <!-- PayPal branding -->
+    <div style="text-align:center; margin-bottom:2rem;">
+      <div style="
+        display:inline-flex; align-items:center; gap:.6rem;
+        background:rgba(0,112,240,.1); border:1px solid rgba(0,112,240,.25);
+        border-radius:50px; padding:.6rem 1.5rem; margin-bottom:1.5rem;
+      ">
+        <span style="font-size:1.4rem;">🅿️</span>
+        <span style="color:#0070f0; font-family:'Syne',sans-serif; font-weight:700; font-size:1.1rem;">
+          Pay with PayPal
+        </span>
+      </div>
+      <h2 style="font-size:1.6rem; margin-bottom:.5rem;">Complete your registration</h2>
+      <p style="color:var(--muted); font-size:.9rem;">
+        You'll be redirected to PayPal to complete the payment securely.
+      </p>
+    </div>
+
+    <!-- Event summary -->
+    <div style="
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:12px; padding:1.25rem; margin-bottom:1.75rem;
+    ">
+      <div style="font-weight:600; margin-bottom:.4rem;">{{ event.title }}</div>
+      <div style="color:var(--muted); font-size:.875rem; margin-bottom:1rem;">
+        <i class="bi bi-calendar3 me-1" style="color:var(--brand);"></i>
+        {{ event.date|date:"M d, Y · g:i A" }}
+      </div>
+      <div style="
+        padding-top:1rem; border-top:1px solid var(--border);
+        display:flex; justify-content:space-between; align-items:center;
+      ">
+        <span style="color:var(--muted); font-size:.875rem;">Amount</span>
+        <div style="text-align:right;">
+          <div style="font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:700; color:#0070f0;">
+            KES {{ event.price }}
+          </div>
+          <div style="color:var(--muted); font-size:.75rem;">
+            ≈ ${{ event.price|floatformat:0 }} USD (approx.)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PayPal button -->
+    <a href="{% url 'create_paypal_order' event.pk %}"
+       class="btn w-100"
+       style="
+         background:linear-gradient(135deg,#0070f0,#0050b3);
+         color:#fff; border:none; border-radius:50px;
+         padding:.85rem; font-size:1rem; font-weight:600;
+         font-family:'Syne',sans-serif; text-align:center;
+         display:block; text-decoration:none;
+       ">
+      <i class="bi bi-paypal me-1"></i> Continue to PayPal
+    </a>
+
+    <!-- Or pay with M-Pesa -->
+    <div style="text-align:center; margin-top:1.25rem;">
+      <span style="color:var(--muted); font-size:.85rem;">Prefer M-Pesa? </span>
+      <a href="{% url 'payment_page' event_pk=event.pk %}"
+         style="color:#19C878; font-size:.85rem; font-weight:600;">
+        Pay with M-Pesa instead
+      </a>
+    </div>
+
+    <p style="text-align:center; color:var(--muted); font-size:.78rem; margin-top:1.25rem;">
+      🔒 Payment processed securely by PayPal. We never see your card details.
+    </p>
+  </div>
+</div>
+{% endblock %}

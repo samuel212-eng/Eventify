@@ -5,6 +5,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 import random, string
+from django.utils.text import slugify
 
 
 def generate_checkin_code():
@@ -38,6 +39,22 @@ class Event(models.Model):
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=True)
+
+# added slug field
+    slug = models.SlugField(max_length=250, unique=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        # Auto-generate the slug from the title when saving
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+            # If slug already exists, add a number: nairobi-tech-summit-2
+            while Event.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
@@ -235,3 +252,192 @@ class EventReport(models.Model):
 
     class Meta:
         unique_together = ('event', 'reported_by')
+
+
+
+# new add on classes
+class OrganizerFollow(models.Model):
+    """
+    A user follows an organiser.
+    When that organiser creates a new event,
+    followers get an email notification.
+    """
+    follower   = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
+    organizer  = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followers')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.follower.username} follows {self.organizer.username}"
+
+    class Meta:
+        unique_together = ('follower', 'organizer')
+        ordering        = ['-created_at']
+
+
+class SavedEvent(models.Model):
+    """
+    A user saves (bookmarks) an event they are interested in.
+    They can view all saved events from their dashboard.
+    """
+    user     = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_events')
+    event    = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='saves')
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} saved {self.event.title}"
+
+    class Meta:
+        unique_together = ('user', 'event')
+        ordering        = ['-saved_at']
+
+
+
+
+class PromoCode(models.Model):
+    """
+    Organisers create discount codes for their events.
+    E.g. EARLYBIRD50 = 50% off, max 20 uses, expires April 30
+    """
+    event           = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='promo_codes')
+    code            = models.CharField(max_length=20, unique=True)
+    discount_type   = models.CharField(max_length=10, choices=[('percent','Percentage'),('fixed','Fixed Amount')], default='percent')
+    discount_value  = models.DecimalField(max_digits=6, decimal_places=2, help_text="50 = 50% off or KES 50 off")
+    max_uses        = models.PositiveIntegerField(default=100)
+    times_used      = models.PositiveIntegerField(default=0)
+    expires_at      = models.DateTimeField(null=True, blank=True)
+    is_active       = models.BooleanField(default=True)
+    created_at      = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.code} — {self.discount_value}{'%' if self.discount_type=='percent' else ' KES'} off {self.event.title}"
+
+    def is_valid(self):
+        from django.utils import timezone
+        if not self.is_active:
+            return False, "This promo code is no longer active."
+        if self.times_used >= self.max_uses:
+            return False, "This promo code has reached its usage limit."
+        if self.expires_at and timezone.now() > self.expires_at:
+            return False, "This promo code has expired."
+        return True, "Valid"
+
+    def calculate_discount(self, original_price):
+        """Returns the discounted price"""
+        if self.discount_type == 'percent':
+            discount = original_price * (self.discount_value / 100)
+        else:
+            discount = self.discount_value
+        return max(0, original_price - discount)
+
+
+# ─────────────────────────────────────────────
+#  IN-APP NOTIFICATIONS
+# ─────────────────────────────────────────────
+
+class Notification(models.Model):
+    """
+    In-app notifications shown in the navbar bell icon.
+    Created automatically by signals/views when things happen.
+    """
+    TYPE_CHOICES = [
+        ('event_approved',   '✅ Event Approved'),
+        ('event_rejected',   '❌ Event Rejected'),
+        ('new_registration', '🎟️ New Registration'),
+        ('waitlist_spot',    '🎉 Waitlist Spot Available'),
+        ('new_review',       '⭐ New Review'),
+        ('new_follower',     '👤 New Follower'),
+        ('event_reminder',   '⏰ Event Reminder'),
+        ('new_event',        '🎪 New Event from Following'),
+    ]
+
+    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    notif_type = models.CharField(max_length=30, choices=TYPE_CHOICES)
+    title      = models.CharField(max_length=200)
+    message    = models.TextField()
+    link       = models.CharField(max_length=300, blank=True)
+    is_read    = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} — {self.title}"
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+# ─────────────────────────────────────────────
+#  EVENT Q&A
+# ─────────────────────────────────────────────
+
+class EventQuestion(models.Model):
+    """
+    Users ask questions about an event before registering.
+    The organiser can answer publicly.
+    """
+    event      = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='questions')
+    author     = models.ForeignKey(User, on_delete=models.CASCADE, related_name='asked_questions')
+    question   = models.TextField(max_length=500)
+    answer     = models.TextField(blank=True, help_text="Organiser's answer")
+    answered_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='answered_questions')
+    created_at = models.DateTimeField(auto_now_add=True)
+    answered_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Q: {self.question[:50]} on {self.event.title}"
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+# ─────────────────────────────────────────────
+#  PAGE VIEW TRACKER (for organiser analytics)
+# ─────────────────────────────────────────────
+
+class EventPageView(models.Model):
+    """
+    Tracks how many times each event page has been visited.
+    Stored as a simple daily count to avoid bloating the DB.
+    """
+    event      = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='page_views')
+    date       = models.DateField(auto_now_add=True)
+    view_count = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.event.title} — {self.date} ({self.view_count} views)"
+
+    class Meta:
+        unique_together = ('event', 'date')
+
+
+# ─────────────────────────────────────────────
+#  EVENT GALLERY
+# ─────────────────────────────────────────────
+
+class EventGalleryImage(models.Model):
+    """Multiple photos per event"""
+    event      = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='gallery')
+    image      = models.ImageField(upload_to='events/gallery/')
+    caption    = models.CharField(max_length=200, blank=True)
+    order      = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Photo for {self.event.title}"
+
+    class Meta:
+        ordering = ['order', 'created_at']
+
+
+# ─────────────────────────────────────────────
+#  REVIEW REPLY
+# ─────────────────────────────────────────────
+
+class ReviewReply(models.Model):
+    """Organiser replies to a review publicly"""
+    review     = models.OneToOneField('EventReview', on_delete=models.CASCADE, related_name='reply')
+    author     = models.ForeignKey(User, on_delete=models.CASCADE)
+    message    = models.TextField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Reply to review by {self.review.author.username}"

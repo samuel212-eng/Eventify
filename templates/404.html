@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Page Not Found — Eventify{% endblock %}
+{% block content %}
+<div style="min-height:78vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:3rem 1rem;">
+  <div class="fade-up">
+    <div style="font-family:'Syne',sans-serif;font-size:clamp(6rem,18vw,10rem);font-weight:800;line-height:1;background:linear-gradient(135deg,var(--brand),rgba(255,77,109,.25));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px;letter-spacing:-4px;">404</div>
+    <div style="font-size:3rem;margin-bottom:16px;">🔍</div>
+    <h2 style="font-size:1.75rem;margin-bottom:10px;">This page doesn't exist</h2>
+    <p style="color:var(--muted);max-width:400px;margin:0 auto 28px;line-height:1.7;font-size:.95rem;">The page you're looking for may have been removed or the link might be broken.</p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap mb-4">
+      <a href="{% url 'home' %}" class="btn-brand" style="padding:11px 24px;"><i class="bi bi-house-fill"></i>Go Home</a>
+      <a href="{% url 'event_list' %}" class="btn-outline-brand" style="padding:11px 24px;"><i class="bi bi-grid-3x3-gap"></i>Browse Events</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

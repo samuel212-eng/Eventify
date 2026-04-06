@@ -4,6 +4,9 @@ from .models import (
     EventReview, Waitlist, MpesaPayment,
     OrganizerProfile, EventApproval, EventReport
 )
+from .models import (PromoCode, Notification, EventQuestion,
+                     EventPageView, EventGalleryImage, ReviewReply)
+
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
@@ -47,3 +50,19 @@ class EventApprovalAdmin(admin.ModelAdmin):
 class EventReportAdmin(admin.ModelAdmin):
     list_display = ['event', 'reported_by', 'reason', 'is_resolved']
     list_filter  = ['is_resolved', 'reason']
+
+
+@admin.register(PromoCode)
+class PromoCodeAdmin(admin.ModelAdmin):
+  list_display = ['code', 'event', 'discount_value', 'times_used', 'is_active']
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+  list_display = ['user', 'title', 'is_read', 'created_at']
+
+@admin.register(EventQuestion)
+class QuestionAdmin(admin.ModelAdmin):
+  list_display = ['event', 'author', 'created_at', 'answered_at']
+
+  admin.site.register(EventGalleryImage)
+  admin.site.register(ReviewReply)

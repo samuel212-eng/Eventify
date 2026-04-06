@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Saved Events — Eventify{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <div class="section-label">Your collection</div>
+    <h1 style="font-size:2rem;">❤️ Saved Events</h1>
+    <p style="color:var(--muted);font-size:.9rem;">Events you've bookmarked</p>
+  </div>
+</div>
+
+<div class="container mt-5 mb-5">
+  {% if saves %}
+    <div class="row g-4">
+      {% for save in saves %}
+        <div class="col-md-6 col-lg-4 scroll-reveal">
+          <div style="position:relative;">
+            {% with event=save.event %}
+              {% include "events/partials/event_card.html" %}
+            {% endwith %}
+            <!-- Unsave button -->
+            <button onclick="unsaveEvent({{ save.event.pk }}, this)"
+                    style="position:absolute;top:10px;right:44px;width:30px;height:30px;border-radius:50%;background:rgba(255,77,109,.85);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;"
+                    title="Remove from saved">
+              <i class="bi bi-heart-fill" style="color:#fff;font-size:.75rem;"></i>
+            </button>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon"><i class="bi bi-heart"></i></span>
+      <h4>No saved events yet</h4>
+      <p>When you find events you're interested in, tap the heart icon to save them here for later.</p>
+      <a href="{% url 'event_list' %}" class="btn-brand"><i class="bi bi-grid-3x3-gap"></i>Browse Events</a>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+function unsaveEvent(eventPk, btn) {
+  fetch(`/events/${eventPk}/save/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCsrf() }
+  })
+  .then(r => r.json())
+  .then(data => {
+    // Remove the card from the page with a fade
+    const card = btn.closest('.col-md-6');
+    card.style.transition = 'opacity .3s, transform .3s';
+    card.style.opacity = '0';
+    card.style.transform = 'scale(0.95)';
+    setTimeout(() => card.remove(), 300);
+    showToast('Removed from saved events', 'info');
+  });
+}
+</script>
+{% endblock %}

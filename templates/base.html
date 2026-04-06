@@ -1,310 +1,365 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}Eventify{% endblock %}</title>
-
-  <!-- Bootstrap CSS — handles layout and basic components -->
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>{% block title %}Eventify — Discover Extraordinary Events{% endblock %}</title>
+  <meta name="description" content="{% block meta_desc %}Kenya's premier event platform. Discover concerts, tech summits, workshops. Book with M-Pesa instantly.{% endblock %}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#FF4D6D;--brand-dark:#C9184A;--brand-glow:rgba(255,77,109,.18);
+  --dark:#0A0A0A;--card-bg:#111111;--surface:#191919;--surface-2:#222222;
+  --border:#242424;--border-light:#2E2E2E;--text:#EFEFEF;--muted:#767676;--muted-2:#999;
+  --success:#19C878;--warning:#FFBE0B;--info:#3A86FF;--danger:#FF6B6B;
+  --radius:16px;--radius-sm:10px;--radius-xs:7px;
+  --shadow-sm:0 2px 8px rgba(0,0,0,.35);--shadow-md:0 8px 28px rgba(0,0,0,.45);
+  --shadow-lg:0 20px 48px rgba(0,0,0,.55);--shadow-brand:0 8px 28px rgba(255,77,109,.2);
+}
+[data-theme="light"]{
+  --dark:#F5F5F5;--card-bg:#FFFFFF;--surface:#F0F0F0;--surface-2:#E8E8E8;
+  --border:#E0E0E0;--border-light:#D5D5D5;--text:#111111;--muted:#666666;--muted-2:#888888;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.65;min-height:100vh;transition:background .25s,color .25s}
+h1,h2,h3,h4,h5,h6{font-family:'Syne',sans-serif;font-weight:700;line-height:1.15}
+a{color:var(--brand);text-decoration:none}
+a:hover{color:var(--brand-dark)}
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .55s ease both}
+.fade-up-1{animation:fadeUp .55s .08s ease both}
+.fade-up-2{animation:fadeUp .55s .16s ease both}
+.fade-up-3{animation:fadeUp .55s .24s ease both}
+.fade-up-4{animation:fadeUp .55s .32s ease both}
 
-  <style>
+/* SKELETON */
+.skeleton{background:linear-gradient(90deg,var(--surface) 25%,var(--border-light) 50%,var(--surface) 75%);background-size:400% 100%;animation:shimmer 1.6s ease-in-out infinite;border-radius:var(--radius-xs)}
+.skel-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.skel-img{height:210px;width:100%}
+.skel-line{height:13px;margin-bottom:9px}
+.skel-line.w60{width:60%}.skel-line.w80{width:80%}.skel-line.w40{width:40%}
+.skel-pad{padding:16px}
 
-    /* DESIGN SYSTEM — all colours & fonts live here*/
-    :root {
-      --brand:      #FF4D6D;     /* hot pink — our main accent */
-      --brand-dark: #C9184A;
-      --dark:       #0D0D0D;
-      --card-bg:    #161616;
-      --surface:    #1E1E1E;
-      --border:     #2A2A2A;
-      --text:       #E8E8E8;
-      --muted:      white;              /* #888*/
-      --radius:     14px;
-    }
+/* NAVBAR */
+.navbar{background:rgba(10,10,10,.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:11px 0;position:sticky;top:0;z-index:1000}
+.navbar-brand{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--brand) !important;letter-spacing:-.5px}
+.nav-link{color:var(--muted) !important;font-weight:500;font-size:.875rem;transition:color .2s;padding:6px 12px !important;border-radius:var(--radius-xs)}
+.nav-link:hover{color:var(--text) !important;background:rgba(255,255,255,.05)}
+.nav-link.active{color:var(--text) !important}
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+/* BUTTONS */
+.btn-brand{background:var(--brand);color:#fff !important;border:none;border-radius:50px;padding:10px 24px;font-weight:600;font-family:'Syne',sans-serif;font-size:.875rem;letter-spacing:.2px;transition:all .2s;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.btn-brand:hover{background:var(--brand-dark);transform:translateY(-1px);box-shadow:var(--shadow-brand)}
+.btn-brand:active{transform:translateY(0)}
+.btn-outline-brand{background:transparent;color:var(--brand) !important;border:1.5px solid var(--brand);border-radius:50px;padding:10px 24px;font-weight:600;font-family:'Syne',sans-serif;font-size:.875rem;transition:all .2s;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.btn-outline-brand:hover{background:var(--brand);color:#fff !important;transform:translateY(-1px)}
+.btn-ghost{background:var(--surface);color:var(--text) !important;border:1px solid var(--border);border-radius:50px;padding:9px 20px;font-weight:500;font-size:.875rem;transition:all .2s;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.btn-ghost:hover{border-color:var(--brand);color:var(--brand) !important}
+.btn-danger-soft{background:rgba(255,107,107,.1);color:var(--danger) !important;border:1px solid rgba(255,107,107,.3);border-radius:50px;padding:9px 20px;font-weight:600;font-size:.875rem;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-danger-soft:hover{background:rgba(255,107,107,.2)}
 
-    body {
-      background: var(--dark);
-      color:      var(--text);
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
-    }
+/* CARDS */
+.event-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;height:100%;position:relative;display:flex;flex-direction:column}
+.event-card:hover{transform:translateY(-5px);box-shadow:0 20px 48px rgba(0,0,0,.45),0 0 0 1px rgba(255,77,109,.25);border-color:rgba(255,77,109,.3)}
+.event-card .card-img-wrap{overflow:hidden;position:relative;aspect-ratio:16/9}
+.event-card .card-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s ease}
+.event-card:hover .card-img{transform:scale(1.04)}
+.event-card .img-placeholder{aspect-ratio:16/9;width:100%;background:linear-gradient(135deg,#1A0810,#111);display:flex;align-items:center;justify-content:center;font-size:2.8rem}
+.event-card .card-body{padding:16px;flex:1;display:flex;flex-direction:column}
+.badge-hot{position:absolute;top:10px;left:10px;background:var(--brand);color:#fff;font-size:.67rem;font-weight:700;padding:3px 10px;border-radius:50px;letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;gap:3px;z-index:2}
+.badge-free{position:absolute;top:10px;right:10px;background:var(--success);color:#fff;font-size:.67rem;font-weight:700;padding:3px 10px;border-radius:50px;z-index:2}
+.badge-full{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.75);color:#FF6B6B;font-size:.67rem;font-weight:700;padding:3px 10px;border-radius:50px;z-index:2;backdrop-filter:blur(4px)}
 
-    h1, h2, h3, h4, h5, h6 {
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-    }
+/* MISC */
+.tag{display:inline-flex;align-items:center;gap:4px;background:rgba(255,77,109,.1);color:var(--brand);font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:50px;letter-spacing:.4px;text-transform:uppercase}
+.form-control,.form-select{background:var(--surface) !important;border:1px solid var(--border) !important;color:var(--text) !important;border-radius:var(--radius-sm) !important;padding:10px 14px !important;font-size:.9rem !important;transition:border-color .2s,box-shadow .2s}
+.form-control:focus,.form-select:focus{border-color:var(--brand) !important;box-shadow:0 0 0 3px var(--brand-glow) !important;outline:none !important}
+.form-control::placeholder{color:var(--muted) !important}
+.form-label{color:var(--muted-2);font-size:.8rem;font-weight:500;margin-bottom:6px}
+option{background:var(--surface)}
+.alert{border-radius:var(--radius-sm);border:none;font-size:.875rem}
+.alert-success{background:rgba(25,200,120,.1);color:var(--success)}
+.alert-danger{background:rgba(255,77,109,.1);color:var(--brand)}
+.alert-warning{background:rgba(255,190,11,.1);color:var(--warning)}
+.alert-info{background:rgba(58,134,255,.1);color:var(--info)}
 
-    /* ---- NAVBAR ---- */
-    .navbar {
-      background: rgba(13,13,13,0.95);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 0;
-      position: sticky;
-      top: 0;
-      z-index: 999;
-    }
+/* TOAST */
+#toast-wrap{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:360px;width:calc(100% - 48px)}
+.toast-item{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px 16px;font-size:.875rem;font-weight:500;display:flex;align-items:flex-start;gap:10px;box-shadow:var(--shadow-md);pointer-events:all;animation:slideUp .3s ease both;transition:opacity .3s,transform .3s}
+.toast-item.t-success{border-left:3px solid var(--success)}
+.toast-item.t-error{border-left:3px solid var(--brand)}
+.toast-item.t-warning{border-left:3px solid var(--warning)}
+.toast-item.t-info{border-left:3px solid var(--info)}
+.toast-x{background:none;border:none;color:var(--muted);cursor:pointer;padding:0;margin-left:auto;flex-shrink:0;font-size:.9rem}
 
-    .navbar-brand {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: var(--brand) !important;
-      letter-spacing: -0.5px;
-    }
+/* PROGRESS */
+.progress-track{background:var(--surface-2,#222);border-radius:50px;height:6px;overflow:hidden}
+.progress-fill{height:100%;border-radius:50px;transition:width .6s ease}
 
-    .nav-link {
-      color: var(--muted) !important;
-      font-weight: 500;
-      transition: color 0.2s;
-      padding: 0.5rem 1rem !important;
-    }
+/* STAT */
+.stat-box{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;text-align:center;transition:border-color .2s,transform .2s}
+.stat-box:hover{border-color:var(--brand);transform:translateY(-2px)}
+.stat-number{font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;color:var(--brand);line-height:1}
 
-    .nav-link:hover, .nav-link.active { color: var(--text) !important; }
+/* EMPTY STATE */
+.empty-state{background:var(--card-bg);border:1px dashed var(--border-light);border-radius:var(--radius);padding:64px 32px;text-align:center}
+.empty-icon{font-size:3.2rem;opacity:.35;display:block;margin-bottom:16px}
+.empty-state h4{margin-bottom:8px;font-size:1.1rem}
+.empty-state p{color:var(--muted);font-size:.875rem;margin-bottom:24px;max-width:360px;margin-left:auto;margin-right:auto}
 
-    /* ---- BUTTONS ---- */
-    .btn-brand {
-      background: var(--brand);
-      color: #fff;
-      border: none;
-      border-radius: 50px;
-      padding: 0.6rem 1.6rem;
-      font-weight: 600;
-      font-family: 'Syne', sans-serif;
-      transition: background 0.2s, transform 0.15s;
-    }
-    .btn-brand:hover {
-      background: var(--brand-dark);
-      color: #fff;
-      transform: translateY(-1px);
-    }
+/* PAGE HERO */
+.page-hero{background:linear-gradient(135deg,#180510 0%,var(--dark) 60%);border-bottom:1px solid var(--border);padding:48px 0 32px}
+.section-label{font-size:.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--brand);margin-bottom:6px}
 
-    .btn-outline-brand {
-      background: transparent;
-      color: var(--brand);
-      border: 1.5px solid var(--brand);
-      border-radius: 50px;
-      padding: 0.6rem 1.6rem;
-      font-weight: 600;
-      font-family: 'Syne', sans-serif;
-      transition: all 0.2s;
-    }
-    .btn-outline-brand:hover {
-      background: var(--brand);
-      color: #fff;
-    }
+/* AUTH */
+.auth-card{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:48px;max-width:460px;margin:48px auto}
 
-    /* ---- CARDS ---- */
-    .event-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      transition: transform 0.25s, border-color 0.25s;
-      height: 100%;
-    }
-    .event-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--brand);
-    }
-    .event-card img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-    }
-    .event-card .card-body { padding: 1.25rem; }
-    .event-card .card-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
-    }
+/* THEME TOGGLE */
+.theme-btn{background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:7px 14px;cursor:pointer;color:var(--muted);font-size:.82rem;transition:all .2s;display:flex;align-items:center;gap:6px}
+.theme-btn:hover{border-color:var(--brand);color:var(--brand)}
 
-    /* ---- BADGE / TAG ---- */
-    .tag {
-      display: inline-block;
-      background: rgba(255,77,109,0.15);
-      color: var(--brand);
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 0.25rem 0.75rem;
-      border-radius: 50px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
+/* CHIP BAR */
+.chip-bar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.chip-bar::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;padding:7px 16px;border-radius:50px;border:1.5px solid var(--border);color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;flex-shrink:0;background:transparent}
+.chip.active,.chip:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-glow)}
 
-    /* ---- FORMS ---- */
-    .form-control, .form-select {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 0.7rem 1rem;
-    }
-    .form-control:focus, .form-select:focus {
-      background: var(--surface);
-      border-color: var(--brand);
-      color: var(--text);
-      box-shadow: 0 0 0 3px rgba(255,77,109,0.15);
-    }
-    .form-label { color: var(--muted); font-size: 0.875rem; font-weight: 500; }
+/* ═══ PRIORITY #1: MOBILE STICKY BOOKING BAR ═══ */
+.mobile-book-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,10,.96);backdrop-filter:blur(24px);border-top:1px solid var(--border);padding:12px 16px;z-index:998;align-items:center;gap:12px}
+@media(max-width:991px){.mobile-book-bar{display:flex}body{padding-bottom:80px}}
+.mob-price{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--brand);flex-shrink:0}
+.mob-meta{flex:1;min-width:0;font-size:.75rem;color:var(--muted);line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-    /* ---- AUTH CARD ---- */
-    .auth-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 2.5rem;
-      max-width: 480px;
-      margin: 5rem auto;
-    }
+/* COUNTDOWN */
+.countdown-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;display:flex;gap:8px;justify-content:center}
+.cd-unit{text-align:center;min-width:48px;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-xs);padding:8px 5px}
+.cd-num{font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:var(--brand);line-height:1}
+.cd-lbl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
 
-    /* ---- ALERTS ---- */
-    .alert { border-radius: 12px; border: none; }
-    .alert-success { background: rgba(25,200,120,0.15); color: #19C878; }
-    .alert-danger  { background: rgba(255,77,109,0.15); color: var(--brand); }
-    .alert-warning { background: rgba(255,190,11,0.15); color: #FFBE0B; }
-    .alert-info    { background: rgba(58,134,255,0.15); color: #3A86FF; }
+/* SCROLL REVEAL */
+.scroll-reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.scroll-reveal.revealed{opacity:1;transform:translateY(0)}
 
-    /* ---- PAGE HERO ---- */
-    .page-hero {
-      background: linear-gradient(135deg, #1a0a10 0%, #0D0D0D 60%);
-      border-bottom: 1px solid var(--border);
-      padding: 3rem 0 2rem;
-    }
+/* PRICE */
+.price-tag{font-family:'Syne',sans-serif;font-weight:800;color:var(--brand)}
+hr{border-color:var(--border);opacity:1}
 
-    /* ---- FOOTER ---- */
-    footer {
-      background: var(--card-bg);
-      border-top: 1px solid var(--border);
-      padding: 2.5rem 0;
-      color: var(--muted);
-      font-size: 0.875rem;
-      margin-top: 5rem;
-    }
+/* FOOTER */
+footer{background:var(--card-bg);border-top:1px solid var(--border);padding:48px 0 24px;margin-top:96px}
+.footer-brand{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--brand)}
+.footer-link{color:var(--muted);font-size:.855rem;display:block;margin-bottom:6px;transition:color .15s}
+.footer-link:hover{color:var(--text)}
+.footer-head{font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
 
-    /* ---- PLACEHOLDER IMAGE ---- */
-    .img-placeholder {
-      width: 100%;
-      height: 200px;
-      background: linear-gradient(135deg, #1E1E1E, #2A1A20);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--muted);
-      font-size: 2.5rem;
-    }
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--dark)}
+::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:3px}
 
-    /* ---- STAT BOX ---- */
-    .stat-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      text-align: center;
-    }
-    .stat-number {
-      font-family: 'Syne', sans-serif;
-      font-size: 2.5rem;
-      font-weight: 800;
-      color: var(--brand);
-    }
-
-    /* ---- PRICE TAG ---- */
-    .price-tag {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--brand);
-    }
-
-    /* ---- DIVIDER ---- */
-    hr { border-color: var(--border); }
-
-    a { color: var(--brand); text-decoration: none; }
-    a:hover { color: var(--brand-dark); }
-  </style>
-
-  {% block extra_css %}{% endblock %}
+/* MOBILE */
+@media(max-width:768px){
+  .auth-card{margin:24px 16px;padding:28px 20px}
+  .stat-number{font-size:1.9rem}
+  #toast-wrap{right:12px;left:12px;width:auto}
+}
+@media(max-width:576px){
+  .navbar-brand{font-size:1.2rem}
+}
+</style>
+{% block extra_css %}{% endblock %}
 </head>
-
 <body>
 
-<!-- ============ NAVBAR ============ -->
 <nav class="navbar navbar-expand-lg">
   <div class="container">
     <a class="navbar-brand" href="{% url 'home' %}">⚡ Eventify</a>
-
-    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
-      <i class="bi bi-list text-light fs-4"></i>
+    <button class="navbar-toggler border-0 p-1" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <i class="bi bi-list text-light" style="font-size:1.5rem;"></i>
     </button>
-
-    <div class="collapse navbar-collapse" id="mainNav">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="{% url 'event_list' %}">Browse Events</a></li>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav me-auto mt-2 mt-lg-0" style="gap:2px;">
+        <li class="nav-item"><a class="nav-link" href="{% url 'event_list' %}"><i class="bi bi-grid-3x3-gap me-1"></i>Find Events</a></li>
         {% if user.is_authenticated %}
-          <li class="nav-item"><a class="nav-link" href="{% url 'my_tickets' %}">My Tickets</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'my_events' %}">My Events</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'my_tickets' %}"><i class="bi bi-ticket me-1"></i>My Tickets</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'my_events' %}"><i class="bi bi-calendar-check me-1"></i>My Events</a></li>
+          {% if user.is_staff %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'admin_dashboard' %}"><i class="bi bi-bar-chart me-1"></i>Dashboard</a></li>
+          {% endif %}
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'apply_for_verification' %}"><i class="bi bi-shield-check me-1"></i>Become an Organiser</a></li>
         {% endif %}
       </ul>
+      <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
 
-      <div class="d-flex gap-2 align-items-center">
+{#   NOTIFICATION BELL FOR NAV BAR             #}
+
         {% if user.is_authenticated %}
-            {% if user.is_staff %}
-                  <li class="nav-item">
-                    <a class="nav-link" href="{% url 'admin_dashboard' %}">📊 Dashboard</a>
-                  </li>
-            {% endif %}
-          <a href="{% url 'event_create' %}" class="btn btn-brand">+ Create Event</a>
-          <span class="{#text-muted#} small">{{ user.username }}</span>
-          <form method="post" action="{% url 'logout' %}" class="d-inline">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-sm" style="color:var(--muted);">Log out</button>
-          </form>
+          <a href="{% url 'notification_list' %}"
+             style="position:relative;display:flex;align-items:center;justify-content:center;
+                    width:36px;height:36px;border-radius:50%;background:var(--surface);
+                    border:1px solid var(--border);color:var(--muted);font-size:.95rem;
+                    transition:all .2s;"
+             onmouseover="this.style.borderColor='var(--brand)';this.style.color='var(--brand)'"
+             onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'"
+             title="Notifications"
+             id="bellLink">
+            <i class="bi bi-bell"></i>
+            <!-- Unread badge -->
+            <span id="notifBadge" style="
+              display:none; position:absolute; top:-4px; right:-4px;
+              background:var(--brand); color:#fff; font-size:.6rem;
+              font-weight:700; width:16px; height:16px; border-radius:50%;
+              display:flex; align-items:center; justify-content:center;
+              border:2px solid var(--dark);
+            ">0</span>
+          </a>
+        {% endif %}
+
+        <script>
+        // Fetch unread notification count and update the badge
+        function refreshNotifBadge() {
+          fetch('/notifications/count/')
+            .then(r => r.json())
+            .then(data => {
+              const badge = document.getElementById('notifBadge');
+              if (!badge) return;
+              if (data.count > 0) {
+                badge.textContent = data.count > 9 ? '9+' : data.count;
+                badge.style.display = 'flex';
+              } else {
+                badge.style.display = 'none';
+              }
+            })
+            .catch(() => {});   // Fail silently
+        }
+
+        // Check every 60 seconds
+        refreshNotifBadge();
+        setInterval(refreshNotifBadge, 60000);
+        </script>
+
+
+        <button class="theme-btn" onclick="toggleTheme()"><i class="bi bi-moon-stars" id="themeIcon"></i></button>
+        {% if user.is_authenticated %}
+          <a href="{% url 'event_create' %}" class="btn-brand" style="padding:8px 18px;font-size:.82rem;"><i class="bi bi-plus-lg"></i>Create</a>
+          <div class="dropdown">
+            <button class="btn-ghost dropdown-toggle" style="padding:7px 14px;font-size:.82rem;" data-bs-toggle="dropdown">
+              <div style="width:22px;height:22px;border-radius:50%;background:var(--brand);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;flex-shrink:0;">{{ user.username|first|upper }}</div>
+              <span class="d-none d-sm-inline">{{ user.username }}</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" style="background:var(--card-bg);border-color:var(--border);border-radius:var(--radius-sm);min-width:190px;">
+              <li><a class="dropdown-item" href="{% url 'my_tickets' %}" style="color:var(--text);font-size:.855rem;padding:8px 16px;"><i class="bi bi-ticket me-2" style="color:var(--brand);"></i>My Tickets</a></li>
+              <li><a class="dropdown-item" href="{% url 'my_events' %}" style="color:var(--text);font-size:.855rem;padding:8px 16px;"><i class="bi bi-calendar me-2" style="color:var(--brand);"></i>My Events</a></li>
+              <li><a class="dropdown-item" href="{% url 'apply_for_verification' %}" style="color:var(--text);font-size:.855rem;padding:8px 16px;"><i class="bi bi-shield-check me-2" style="color:var(--success);"></i>Get Verified</a></li>
+              <li><hr class="dropdown-divider" style="border-color:var(--border);margin:4px 0;"></li>
+              <li>
+                <form method="post" action="{% url 'logout' %}" class="m-0">
+                  {% csrf_token %}
+                  <button type="submit" class="dropdown-item" style="color:var(--muted);font-size:.855rem;padding:8px 16px;"><i class="bi bi-box-arrow-right me-2"></i>Log out</button>
+                </form>
+              </li>
+            </ul>
+          </div>
         {% else %}
-          <a href="{% url 'login' %}"  class="btn btn-outline-brand btn-sm">Log in</a>
-          <a href="{% url 'signup' %}" class="btn btn-brand btn-sm">Sign up</a>
+          <a href="{% url 'login' %}" class="btn-ghost" style="padding:7px 16px;font-size:.82rem;">Log in</a>
+          <a href="{% url 'signup' %}" class="btn-brand" style="padding:8px 18px;font-size:.82rem;">Sign up free</a>
         {% endif %}
       </div>
     </div>
   </div>
 </nav>
 
-<!-- FLASH MESSAGES -->
+<div id="toast-wrap"></div>
 {% if messages %}
-  <div class="container mt-3">
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
-      </div>
-    {% endfor %}
-  </div>
+<script>window.__msgs=[{% for m in messages %}{t:"{{ m|escapejs }}",k:"{{ m.tags }}"},{% endfor %}];</script>
 {% endif %}
 
-<!--PAGE CONTENT -->
-<main>
-  {% block content %}{% endblock %}
-</main>
+<main>{% block content %}{% endblock %}</main>
 
-<!--FOOTER-->
 <footer>
-  <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-    <span><strong style="color:var(--brand)">⚡ Eventify</strong> — Discover & host amazing events</span>
-    <span>Built with Django &amp; Bootstrap</span>
+  <div class="container">
+    <div class="row g-4 mb-5">
+      <div class="col-lg-4">
+        <div class="footer-brand mb-2">⚡ Eventify</div>
+        <p style="color:var(--muted);font-size:.855rem;max-width:260px;line-height:1.7;margin-bottom:20px;">Kenya's most trusted event platform. Discover, book and host extraordinary experiences.</p>
+        <div class="d-flex gap-2">
+          {% for item in social_links %}
+            <a href="#"
+               style="width:36px;height:36px;border-radius:50%;background:var(--surface);
+                      border:1px solid var(--border);display:flex;align-items:center;
+                      justify-content:center;color:var(--muted);transition:all .2s;">
+                <i class="bi bi-{{ item.icon }}"></i>
+            </a>
+            {% endfor %}
+        </div>
+      </div>
+      <div class="col-6 col-md-3 col-lg-2 offset-lg-2">
+        <div class="footer-head">Discover</div>
+        <a href="{% url 'event_list' %}" class="footer-link">Browse Events</a>
+        <a href="{% url 'event_list' %}?price=free" class="footer-link">Free Events</a>
+        <a href="{% url 'event_list' %}?when=week" class="footer-link">This Weekend</a>
+      </div>
+      <div class="col-6 col-md-3 col-lg-2">
+        <div class="footer-head">Organise</div>
+        <a href="{% url 'event_create' %}" class="footer-link">Create Event</a>
+        <a href="{% url 'apply_for_verification' %}" class="footer-link">Get Verified</a>
+      </div>
+      <div class="col-6 col-md-3 col-lg-2">
+        <div class="footer-head">Support</div>
+        <a href="#" class="footer-link">Help Centre</a>
+        <a href="#" class="footer-link">Contact Us</a>
+        <a href="#" class="footer-link">Privacy Policy</a>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <span style="color:var(--muted);font-size:.78rem;">© 2026 Eventify Technologies Ltd. All rights reserved.</span>
+      <div class="d-flex gap-4 flex-wrap">
+        <span style="color:var(--muted);font-size:.78rem;display:flex;align-items:center;gap:5px;"><i class="bi bi-shield-fill-check" style="color:var(--success);"></i>Verified Organisers</span>
+        <span style="color:var(--muted);font-size:.78rem;display:flex;align-items:center;gap:5px;"><i class="bi bi-lock-fill" style="color:var(--info);"></i>Secure &amp; Encrypted</span>
+        <span style="color:var(--muted);font-size:.78rem;display:flex;align-items:center;gap:5px;"><i class="bi bi-phone-fill" style="color:#19C878;"></i>M-Pesa Enabled</span>
+      </div>
+    </div>
   </div>
 </footer>
 
-<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const ICONS={success:'✅',error:'❌',danger:'❌',warning:'⚠️',info:'ℹ️'};
+function showToast(text,type='info',ms=4500){
+  const w=document.getElementById('toast-wrap');
+  const cls=type==='danger'?'error':type;
+  const el=document.createElement('div');
+  el.className=`toast-item t-${cls}`;
+  el.innerHTML=`<span style="font-size:1rem;flex-shrink:0;">${ICONS[cls]||'ℹ️'}</span><span style="flex:1;line-height:1.45;">${text}</span><button class="toast-x" onclick="killToast(this.parentElement)"><i class="bi bi-x"></i></button>`;
+  w.appendChild(el);
+  setTimeout(()=>killToast(el),ms);
+}
+function killToast(el){if(!el||!el.parentElement)return;el.style.opacity='0';el.style.transform='translateY(8px)';setTimeout(()=>el.remove(),280);}
+document.addEventListener('DOMContentLoaded',()=>{(window.__msgs||[]).forEach((m,i)=>setTimeout(()=>showToast(m.t,m.k),i*180));});
+
+function toggleTheme(){
+  const h=document.documentElement;const ic=document.getElementById('themeIcon');
+  const dark=h.getAttribute('data-theme')==='dark';
+  h.setAttribute('data-theme',dark?'light':'dark');
+  ic.className=dark?'bi bi-sun':'bi bi-moon-stars';
+  localStorage.setItem('ev_theme',dark?'light':'dark');
+}
+(function(){const t=localStorage.getItem('ev_theme')||'dark';document.documentElement.setAttribute('data-theme',t);const ic=document.getElementById('themeIcon');if(ic)ic.className=t==='light'?'bi bi-sun':'bi bi-moon-stars';})();
+
+const rObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('revealed');rObs.unobserve(e.target);}});},{threshold:0.08});
+document.querySelectorAll('.scroll-reveal').forEach(el=>rObs.observe(el));
+
+function getCsrf(){return document.cookie.split('; ').find(r=>r.startsWith('csrftoken='))?.split('=')[1]||'';}
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

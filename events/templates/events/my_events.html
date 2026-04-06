@@ -63,6 +63,9 @@
             <div class="d-flex gap-2">
               <a href="{% url 'event_detail' event.pk %}" class="btn btn-outline-brand btn-sm">View</a>
               <a href="{% url 'event_edit'   event.pk %}" class="btn btn-brand btn-sm">Edit</a>
+                <a href="{% url 'export_attendees' event.pk %}" class="btn btn-outline-brand btn-sm">
+                  <i class="bi bi-download me-1"></i>Export CSV
+                </a>
             </div>
           </div>
         </div>
