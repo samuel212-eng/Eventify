@@ -453,7 +453,7 @@ function toggleSave(eventPk) {
           </div>
         </div>
 
-        <hr>
+      <hr>
 
         {% if user.is_authenticated %}
 
@@ -495,176 +495,107 @@ function toggleSave(eventPk) {
                 <i class="bi bi-clock-history me-1"></i>Join Waitlist ({{ event.waitlist.count }} ahead)
               </a>
             {% endif %}
-              {% endif %}
-      {% endif %}
 
+          {% else %}
+            {# Event has spots and user is not registered — show payment options #}
 
-{#new payment logic#}
-    {% if event.price == 0 %}
-      <!-- Free event — just register -->
-{##}
-{#    {% if not event.is_full and not user_is_registered %}#}
-{#    <div class="countdown-wrap mb-3" id="countdown">#}
-{#      <div class="cd-unit"><div class="cd-num" id="cdDays">--</div><div class="cd-lbl">Days</div></div>#}
-{#      <div class="cd-unit"><div class="cd-num" id="cdHours">--</div><div class="cd-lbl">Hrs</div></div>#}
-{#      <div class="cd-unit"><div class="cd-num" id="cdMins">--</div><div class="cd-lbl">Min</div></div>#}
-{#      <div class="cd-unit"><div class="cd-num" id="cdSecs">--</div><div class="cd-lbl">Sec</div></div>#}
-{#    </div>#}
-{##}
-{#    <script>#}
-{#    (function(){#}
-{#      const target = new Date("{{ event.date|date:'Y-m-d' }}T{{ event.date|date:'H:i:s' }}");#}
-{#      function tick(){#}
-{#        const diff = target - new Date();#}
-{#        if(diff <= 0){#}
-{#          document.getElementById('countdown').innerHTML =#}
-{#            '<div style="color:var(--brand);font-weight:700;font-size:.875rem;text-align:center;width:100%;">🔴 This event has started!</div>';#}
-{#          return;#}
-{#        }#}
-{#        const d=Math.floor(diff/864e5);#}
-{#        const h=Math.floor((diff%864e5)/36e5);#}
-{#        const m=Math.floor((diff%36e5)/6e4);#}
-{#        const s=Math.floor((diff%6e4)/1e3);#}
-{#        document.getElementById('cdDays').textContent  = String(d).padStart(2,'0');#}
-{#        document.getElementById('cdHours').textContent = String(h).padStart(2,'0');#}
-{#        document.getElementById('cdMins').textContent  = String(m).padStart(2,'0');#}
-{#        document.getElementById('cdSecs').textContent  = String(s).padStart(2,'0');#}
-{#        setTimeout(tick,1000);#}
-{#      }#}
-{#      tick();#}
-{#    })();#}
-{#    </script>#}
-{#    {% endif %}#}
-{#      <a href="{% url 'event_register' event.pk %}" class="btn btn-brand w-100" style="padding:.8rem;">#}
-{#        <i class="bi bi-ticket me-1"></i>Register Free#}
-{#      </a>#}
+            {% if event.price > 0 %}
+              {# Countdown timer #}
+              <div class="countdown-wrap mb-3" id="countdown">
+                <div class="cd-unit"><div class="cd-num" id="cdDays">--</div><div class="cd-lbl">Days</div></div>
+                <div class="cd-unit"><div class="cd-num" id="cdHours">--</div><div class="cd-lbl">Hrs</div></div>
+                <div class="cd-unit"><div class="cd-num" id="cdMins">--</div><div class="cd-lbl">Min</div></div>
+                <div class="cd-unit"><div class="cd-num" id="cdSecs">--</div><div class="cd-lbl">Sec</div></div>
+              </div>
+              <script>
+              (function(){
+                const target = new Date("{{ event.date|date:'Y-m-d' }}T{{ event.date|date:'H:i:s' }}");
+                function tick(){
+                  const diff = target - new Date();
+                  if(diff <= 0){
+                    document.getElementById('countdown').innerHTML =
+                      '<div style="color:var(--brand);font-weight:700;font-size:.875rem;text-align:center;width:100%;">🔴 This event has started!</div>';
+                    return;
+                  }
+                  const d=Math.floor(diff/864e5);
+                  const h=Math.floor((diff%864e5)/36e5);
+                  const m=Math.floor((diff%36e5)/6e4);
+                  const s=Math.floor((diff%6e4)/1e3);
+                  document.getElementById('cdDays').textContent  = String(d).padStart(2,'0');
+                  document.getElementById('cdHours').textContent = String(h).padStart(2,'0');
+                  document.getElementById('cdMins').textContent  = String(m).padStart(2,'0');
+                  document.getElementById('cdSecs').textContent  = String(s).padStart(2,'0');
+                  setTimeout(tick,1000);
+                }
+                tick();
+              })();
+              </script>
 
-{#        PROMOTION#}
-                {% if event.price > 0 and not user_is_registered %}
-                    <div class="countdown-wrap mb-3" id="countdown">
-      <div class="cd-unit"><div class="cd-num" id="cdDays">--</div><div class="cd-lbl">Days</div></div>
-      <div class="cd-unit"><div class="cd-num" id="cdHours">--</div><div class="cd-lbl">Hrs</div></div>
-      <div class="cd-unit"><div class="cd-num" id="cdMins">--</div><div class="cd-lbl">Min</div></div>
-      <div class="cd-unit"><div class="cd-num" id="cdSecs">--</div><div class="cd-lbl">Sec</div></div>
-    </div>
-
-    <script>
-    (function(){
-      const target = new Date("{{ event.date|date:'Y-m-d' }}T{{ event.date|date:'H:i:s' }}");
-      function tick(){
-        const diff = target - new Date();
-        if(diff <= 0){
-          document.getElementById('countdown').innerHTML =
-            '<div style="color:var(--brand);font-weight:700;font-size:.875rem;text-align:center;width:100%;">🔴 This event has started!</div>';
-          return;
-        }
-        const d=Math.floor(diff/864e5);
-        const h=Math.floor((diff%864e5)/36e5);
-        const m=Math.floor((diff%36e5)/6e4);
-        const s=Math.floor((diff%6e4)/1e3);
-        document.getElementById('cdDays').textContent  = String(d).padStart(2,'0');
-        document.getElementById('cdHours').textContent = String(h).padStart(2,'0');
-        document.getElementById('cdMins').textContent  = String(m).padStart(2,'0');
-        document.getElementById('cdSecs').textContent  = String(s).padStart(2,'0');
-        setTimeout(tick,1000);
-      }
-      tick();
-    })();
-    </script>
-        <div style="margin-bottom:14px;">
-          <div style="position:relative;">
-            <input type="text" id="promoInput" placeholder="Have a promo code?"
-                   style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:9px 80px 9px 12px;font-size:.855rem;outline:none;">
-            <button onclick="applyPromo()" id="promoBtn"
-                    style="position:absolute;right:0;top:0;bottom:0;background:var(--brand);color:#fff;border:none;border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:0 14px;font-size:.8rem;font-weight:600;cursor:pointer;">
-              Apply
-            </button>
-          </div>
-          <div id="promoMsg" style="font-size:.78rem;margin-top:5px;"></div>
-        </div>
-
-        <script>
-        let promoDiscount = null;
-
-        function applyPromo() {
-          const code = document.getElementById('promoInput').value.trim();
-          const msg  = document.getElementById('promoMsg');
-          if (!code) return;
-
-          fetch(`/events/{{ event.pk }}/promo/?code=${encodeURIComponent(code)}`)
-            .then(r => r.json())
-            .then(data => {
-              if (data.valid) {
-                msg.style.color = '#19C878';
-                msg.textContent = data.message;
-                promoDiscount   = data;
-                // Update displayed price
-                document.querySelectorAll('.price-tag').forEach(el => {
-                  el.textContent = `KES ${parseFloat(data.discounted).toFixed(0)}`;
-                });
-              } else {
-                msg.style.color = '#FF4D6D';
-                msg.textContent = data.error;
+              {# Promo code #}
+              <div style="margin-bottom:14px;">
+                <div style="position:relative;">
+                  <input type="text" id="promoInput" placeholder="Have a promo code?"
+                         style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:9px 80px 9px 12px;font-size:.855rem;outline:none;">
+                  <button onclick="applyPromo()" id="promoBtn"
+                          style="position:absolute;right:0;top:0;bottom:0;background:var(--brand);color:#fff;border:none;border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:0 14px;font-size:.8rem;font-weight:600;cursor:pointer;">
+                    Apply
+                  </button>
+                </div>
+                <div id="promoMsg" style="font-size:.78rem;margin-top:5px;"></div>
+              </div>
+              <script>
+              let promoDiscount = null;
+              function applyPromo() {
+                const code = document.getElementById('promoInput').value.trim();
+                const msg  = document.getElementById('promoMsg');
+                if (!code) return;
+                fetch(`/events/{{ event.pk }}/promo/?code=${encodeURIComponent(code)}`)
+                  .then(r => r.json())
+                  .then(data => {
+                    if (data.valid) {
+                      msg.style.color = '#19C878';
+                      msg.textContent = data.message;
+                      promoDiscount = data;
+                      document.querySelectorAll('.price-tag').forEach(el => {
+                        el.textContent = `KES ${parseFloat(data.discounted).toFixed(0)}`;
+                      });
+                    } else {
+                      msg.style.color = '#FF4D6D';
+                      msg.textContent = data.error;
+                    }
+                  });
               }
-            });
-        }
+              document.getElementById('promoInput')?.addEventListener('keydown', e => {
+                if (e.key === 'Enter') applyPromo();
+              });
+              </script>
+            {% endif %}
 
-        // Allow Enter key on promo input
-        document.getElementById('promoInput')?.addEventListener('keydown', e => {
-          if (e.key === 'Enter') applyPromo();
-        });
-        </script>
-        {% endif %}
+            {# Payment buttons #}
+            {% if event.price == 0 %}
+              <a href="{% url 'event_register' event.pk %}" class="btn btn-brand w-100" style="padding:.8rem;">
+                <i class="bi bi-ticket me-1"></i>Register Free
+              </a>
+            {% else %}
+              <div style="margin-bottom:.75rem;color:var(--muted);font-size:.8rem;text-align:center;">
+                Choose how to pay
+              </div>
+              <a href="{% url 'payment_page' event_pk=event.pk %}"
+                 class="btn w-100 mb-2"
+                 style="padding:.8rem;background:linear-gradient(135deg,#00963A,#007A30);color:#fff;border:none;border-radius:50px;font-family:'Syne',sans-serif;font-weight:600;font-size:.95rem;text-align:center;display:block;text-decoration:none;">
+                <i class="bi bi-phone me-1"></i> M-Pesa · KES {{ event.price }}
+              </a>
+              <a href="{% url 'paypal_payment_page' event_pk=event.pk %}"
+                 class="btn w-100"
+                 style="padding:.8rem;background:linear-gradient(135deg,#0070f0,#0050b3);color:#fff;border:none;border-radius:50px;font-family:'Syne',sans-serif;font-weight:600;font-size:.95rem;text-align:center;display:block;text-decoration:none;">
+                <i class="bi bi-paypal me-1"></i> PayPal · KES {{ event.price }}
+              </a>
+              <p style="color:var(--muted);font-size:.72rem;text-align:center;margin-top:.6rem;">
+                PayPal charges in USD (≈ ${{ event.price|floatformat:0 }})
+              </p>
+            {% endif %}
 
-
-
-
-        {% if event.price == 0 %}
-          <!-- Free event — just register -->
-          <a href="{% url 'event_register' event.pk %}" class="btn btn-brand w-100" style="padding:.8rem;">
-            <i class="bi bi-ticket me-1"></i>Register Free
-          </a>
-
-        {% else %}
-          <!-- Paid event — show both payment options -->
-          <div style="margin-bottom:.75rem; color:var(--muted); font-size:.8rem; text-align:center;">
-            Choose how to pay
-          </div>
-
-          <!-- M-Pesa button -->
-          <a href="{% url 'payment_page' event_pk=event.pk %}"
-             class="btn w-100 mb-2"
-             style="
-               padding:.8rem;
-               background:linear-gradient(135deg,#00963A,#007A30);
-               color:#fff; border:none; border-radius:50px;
-               font-family:'Syne',sans-serif; font-weight:600;
-               font-size:.95rem; text-align:center; display:block;
-               text-decoration:none;
-             ">
-            <i class="bi bi-phone me-1"></i> M-Pesa · KES {{ event.price }}
-          </a>
-
-          <!-- PayPal button -->
-          <a href="{% url 'paypal_payment_page' event_pk=event.pk %}"
-             class="btn w-100"
-             style="
-               padding:.8rem;
-               background:linear-gradient(135deg,#0070f0,#0050b3);
-               color:#fff; border:none; border-radius:50px;
-               font-family:'Syne',sans-serif; font-weight:600;
-               font-size:.95rem; text-align:center; display:block;
-               text-decoration:none;
-             ">
-            <i class="bi bi-paypal me-1"></i> PayPal · KES {{ event.price }}
-          </a>
-
-          <!-- Currency note -->
-          <p style="color:var(--muted); font-size:.72rem; text-align:center; margin-top:.6rem;">
-            PayPal charges in USD (≈ ${{ event.price|floatformat:0 }})
-          </p>
-        {% endif %}
-
+          {% endif %}{# end if user_is_registered / elif event.is_full / else #}
 
           {% if user == event.organizer %}
             <hr>
