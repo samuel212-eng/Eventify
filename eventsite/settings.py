@@ -127,3 +127,6 @@ MPESA_ENV = 'sandbox'
 PAYPAL_CLIENT_ID = 'your_client_id_here'
 PAYPAL_SECRET    = 'your_secret_here'
 PAYPAL_BASE_URL  = 'https://api-m.sandbox.paypal.com'
+
+# ai key
+ANTHROPIC_API_KEY = 'your-key-from-console.anthropic.com'

@@ -3,7 +3,7 @@ from . import views, feature_views, verification_views, mpesa_views
 from . import paypal_views
 from . import next10_views
 from . import extra_views, pdf_views
-
+from . import ai_views, gallery_views, dashboard_views
 urlpatterns = [
 
     # ══════════════════════════════════════════
@@ -147,4 +147,11 @@ urlpatterns = [
     # ⚠️  SLUG CATCH-ALL — THIS MUST BE ABSOLUTELY LAST
     path('events/<slug:slug>/', views.event_detail, name='event_detail'),
 
+
+
+    path('events/<int:event_pk>/ai-chat/',   ai_views.ai_event_chat,           name='ai_event_chat'),
+    path('events/<int:event_pk>/dashboard/', dashboard_views.organiser_dashboard, name='organiser_dashboard'),
+    path('events/<int:event_pk>/gallery/',   gallery_views.manage_gallery,      name='manage_gallery'),
+    path('gallery/<int:image_pk>/delete/',   gallery_views.delete_gallery_image, name='delete_gallery_image'),
+    path('events/<slug:event_slug>/gallery/view/', gallery_views.view_gallery, name='view_gallery'),
 ]

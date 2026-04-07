@@ -441,3 +441,206 @@ class ReviewReply(models.Model):
 
     def __str__(self):
         return f"Reply to review by {self.review.author.username}"
+
+
+# new models
+# ── MULTI-IMAGE GALLERY ──────────────────────
+class EventGalleryImage(models.Model):
+    """Multiple photos per event — swipeable gallery"""
+    event   = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='gallery')
+    image   = models.ImageField(upload_to='events/gallery/')
+    caption = models.CharField(max_length=200, blank=True)
+    order   = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f"Gallery image for {self.event.title}"
+
+
+# ── RECURRING EVENTS ─────────────────────────
+class RecurringEvent(models.Model):
+    """
+    Links multiple Event objects together as a recurring series.
+    e.g. 'Weekly Django Meetup' creates one Event per week.
+    """
+    DAILY   = 'daily'
+    WEEKLY  = 'weekly'
+    MONTHLY = 'monthly'
+    FREQ_CHOICES = [
+        (DAILY,   'Daily'),
+        (WEEKLY,  'Weekly'),
+        (MONTHLY, 'Monthly'),
+    ]
+
+    # The original (parent) event
+    parent_event = models.ForeignKey(
+        'Event', on_delete=models.CASCADE, related_name='recurrence_parent'
+    )
+    frequency    = models.CharField(max_length=10, choices=FREQ_CHOICES)
+    repeat_count = models.PositiveIntegerField(
+        default=4, help_text="How many future occurrences to create"
+    )
+    created_at   = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.parent_event.title} — {self.frequency}"
+
+
+# ── CAPACITY TIERS (e.g. General, VIP, VVIP) ─
+class TicketTier(models.Model):
+    """
+    Multiple ticket types per event with different prices and capacities.
+    e.g. General KES 500 (200 tickets), VIP KES 2000 (50 tickets)
+    """
+    event    = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='tiers')
+    name     = models.CharField(max_length=100, help_text='e.g. General, VIP, VVIP, Early Bird')
+    price    = models.DecimalField(max_digits=8, decimal_places=2)
+    capacity = models.PositiveIntegerField()
+    perks    = models.TextField(blank=True, help_text='Comma-separated perks, e.g. Free drink, Front row, Backstage access')
+    is_active = models.BooleanField(default=True)
+    order    = models.PositiveIntegerField(default=0)
+
+    def spots_taken(self):
+        return TierRegistration.objects.filter(tier=self).count()
+
+    def spots_left(self):
+        return max(0, self.capacity - self.spots_taken())
+
+    def is_sold_out(self):
+        return self.spots_left() <= 0
+
+    def perks_list(self):
+        return [p.strip() for p in self.perks.split(',') if p.strip()]
+
+    class Meta:
+        ordering = ['order', 'price']
+
+    def __str__(self):
+        return f"{self.name} — KES {self.price} ({self.event.title})"
+
+
+class TierRegistration(models.Model):
+    """Tracks which ticket tier a user registered for"""
+    registration = models.OneToOneField(
+        'Registration', on_delete=models.CASCADE, related_name='tier_reg'
+    )
+    tier = models.ForeignKey(TicketTier, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.registration.user.username} — {self.tier.name}"
+
+
+# ── GAMIFICATION / POINTS ────────────────────
+class AttendeePoints(models.Model):
+    """Points system — earned by registering, attending, reviewing"""
+    user   = models.OneToOneField(User, on_delete=models.CASCADE, related_name='points')
+    total  = models.PositiveIntegerField(default=0)
+    level  = models.CharField(max_length=20, default='Newcomer')
+
+    LEVELS = [
+        (0,   'Newcomer'),
+        (50,  'Explorer'),
+        (150, 'Regular'),
+        (300, 'Enthusiast'),
+        (500, 'VIP'),
+        (1000,'Legend'),
+    ]
+
+    def recalculate_level(self):
+        for threshold, label in reversed(self.LEVELS):
+            if self.total >= threshold:
+                self.level = label
+                break
+
+    def __str__(self):
+        return f"{self.user.username}: {self.total} pts ({self.level})"
+
+
+class PointTransaction(models.Model):
+    """Every time a user earns points"""
+    ACTIONS = [
+        ('register',  '🎟️ Registered for event',   10),
+        ('attend',    '✅ Attended event',          25),
+        ('review',    '⭐ Left a review',           15),
+        ('early_bird','⚡ Early bird registration', 20),
+        ('follow',    '👤 Followed an organiser',    5),
+        ('share',     '📢 Shared an event',          5),
+    ]
+    ACTION_CHOICES = [(a[0], a[1]) for a in ACTIONS]
+    POINTS_MAP     = {a[0]: a[2] for a in ACTIONS}
+
+    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='point_txns')
+    action     = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    points     = models.PositiveIntegerField()
+    event      = models.ForeignKey('Event', on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} +{self.points} ({self.action})"
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+# ── SPEAKER CARDS ─────────────────────────────
+class EventSpeaker(models.Model):
+    """Speakers or performers at an event"""
+    event   = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='speakers')
+    name    = models.CharField(max_length=200)
+    title   = models.CharField(max_length=200, blank=True, help_text='e.g. CEO at Safaricom, Lead Engineer')
+    bio     = models.TextField(max_length=500, blank=True)
+    photo   = models.ImageField(upload_to='speakers/', blank=True, null=True)
+    twitter = models.CharField(max_length=100, blank=True)
+    linkedin= models.URLField(blank=True)
+    order   = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return f"{self.name} at {self.event.title}"
+
+
+# ── SPONSORS ──────────────────────────────────
+class EventSponsor(models.Model):
+    """Sponsors with tier-based display"""
+    PLATINUM = 'platinum'
+    GOLD     = 'gold'
+    SILVER   = 'silver'
+    BRONZE   = 'bronze'
+    TIER_CHOICES = [
+        (PLATINUM, 'Platinum'),
+        (GOLD,     'Gold'),
+        (SILVER,   'Silver'),
+        (BRONZE,   'Bronze'),
+    ]
+
+    event   = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='sponsors')
+    name    = models.CharField(max_length=200)
+    logo    = models.ImageField(upload_to='sponsors/', blank=True, null=True)
+    website = models.URLField(blank=True)
+    tier    = models.CharField(max_length=10, choices=TIER_CHOICES, default=SILVER)
+    order   = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.name} ({self.tier}) — {self.event.title}"
+
+
+# ── FAQ ───────────────────────────────────────
+class EventFAQ(models.Model):
+    """Frequently asked questions for an event"""
+    event    = models.ForeignKey('Event', on_delete=models.CASCADE, related_name='faqs')
+    question = models.CharField(max_length=300)
+    answer   = models.TextField()
+    order    = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"FAQ: {self.question[:50]}"

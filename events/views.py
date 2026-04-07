@@ -138,6 +138,12 @@ def event_list(request):
 def event_detail(request, slug):
     """One event's full page — with page view tracking and related events"""
     from .extra_views import track_page_view
+    suggested_questions = [
+        "What time does it start?",
+        "How do I get there?",
+        "Is parking available?",
+        "What's included in the ticket?"
+    ]
 
     event = get_object_or_404(Event, slug=slug, is_published=True)
 
@@ -178,6 +184,7 @@ def event_detail(request, slug):
             date__gte=timezone.now(),
         ).exclude(pk=event.pk).order_by('date')[:3]
 
+
     return render(request, 'events/event_detail.html', {
         'event':              event,
         'user_is_registered': user_is_registered,
@@ -188,6 +195,7 @@ def event_detail(request, slug):
         'reviews':            reviews,
         'questions':          questions,
         'related_events':     related_events,
+        'suggested_questions': suggested_questions,
     })
 
 

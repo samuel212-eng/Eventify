@@ -1,0 +1,42 @@
+{
+  "name": "Eventify — Discover Events",
+  "short_name": "Eventify",
+  "description": "Kenya's premier event platform. Discover, book and host extraordinary events.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#FF4D6D",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='24' fill='%23FF4D6D'/><text y='140' x='20' font-size='140' font-family='Arial'>⚡</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='64' fill='%23FF4D6D'/><text y='380' x='40' font-size='380' font-family='Arial'>⚡</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["entertainment", "lifestyle"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Find Events",
+      "short_name": "Browse",
+      "description": "Browse upcoming events",
+      "url": "/events/",
+      "icons": [{"src": "/static/icon-96.png", "sizes": "96x96"}]
+    },
+    {
+      "name": "My Tickets",
+      "short_name": "Tickets",
+      "description": "View your tickets",
+      "url": "/my-tickets/",
+      "icons": [{"src": "/static/icon-96.png", "sizes": "96x96"}]
+    }
+  ]
+}

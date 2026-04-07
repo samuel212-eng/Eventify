@@ -335,3 +335,5 @@ def get_event_share_link(request, event_pk):
     event = get_object_or_404(Event, pk=event_pk)
     url   = request.build_absolute_uri(f'/events/{event.slug}/')
     return JsonResponse({'url': url})
+
+

@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}Dashboard: {{ event.title }} — Eventify{% endblock %}
+
+{% block content %}
+<div style="background:var(--dark);min-height:100vh;">
+
+  <!-- Sticky sub-header -->
+  <div style="background:rgba(10,10,10,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:14px 0;position:sticky;top:64px;z-index:100;">
+    <div class="container d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <a href="{% url 'event_detail' event.slug %}" style="color:var(--muted);font-size:.855rem;display:flex;align-items:center;gap:4px;">
+          <i class="bi bi-chevron-left"></i>Back
+        </a>
+        <div style="width:1px;height:18px;background:var(--border);"></div>
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;">{{ event.title|truncatechars:35 }}</div>
+          <div style="color:var(--muted);font-size:.75rem;">{{ event.date|date:"M d, Y · g:i A" }}</div>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{% url 'checkin_dashboard' event.pk %}" class="btn-brand" style="padding:8px 18px;font-size:.82rem;">
+          <i class="bi bi-qr-code-scan"></i>Check-In
+        </a>
+        <a href="{% url 'export_attendees' event.pk %}" class="btn-ghost" style="padding:8px 16px;font-size:.82rem;">
+          <i class="bi bi-download"></i>Export CSV
+        </a>
+        <a href="{% url 'event_edit' event.pk %}" class="btn-ghost" style="padding:8px 16px;font-size:.82rem;">
+          <i class="bi bi-pencil"></i>Edit
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container py-5">
+
+    <!-- ── KPI CARDS ── -->
+    <div class="row g-3 mb-5">
+      <!-- Registrations -->
+      <div class="col-6 col-xl-3">
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;border-top:3px solid var(--brand);">
+          <div style="color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Registered</div>
+          <div style="font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;line-height:1;color:var(--brand);">{{ total_regs }}</div>
+          <div style="color:var(--muted);font-size:.78rem;margin-top:6px;">of {{ event.capacity }} capacity</div>
+          <div class="progress-track mt-2"><div class="progress-fill" style="width:{{ event.capacity_percentage }}%;background:var(--brand);"></div></div>
+        </div>
+      </div>
+
+      <!-- Revenue -->
+      <div class="col-6 col-xl-3">
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;border-top:3px solid var(--success);">
+          <div style="color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Revenue</div>
+          <div style="font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;line-height:1;color:var(--success);">
+            {% if event.price == 0 %}Free{% else %}{{ total_revenue|floatformat:0 }}{% endif %}
+          </div>
+          <div style="color:var(--muted);font-size:.78rem;margin-top:6px;">{% if event.price > 0 %}KES total{% else %}Free event{% endif %}</div>
+        </div>
+      </div>
+
+      <!-- Check-in rate -->
+      <div class="col-6 col-xl-3">
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;border-top:3px solid var(--info);">
+          <div style="color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Checked In</div>
+          <div style="font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;line-height:1;color:var(--info);">{{ checked_in }}</div>
+          <div style="color:var(--muted);font-size:.78rem;margin-top:6px;">{{ checkin_rate }}% of attendees</div>
+          <div class="progress-track mt-2"><div class="progress-fill" style="width:{{ checkin_rate }}%;background:var(--info);"></div></div>
+        </div>
+      </div>
+
+      <!-- Page views + conversion -->
+      <div class="col-6 col-xl-3">
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;border-top:3px solid var(--warning);">
+          <div style="color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Page Views</div>
+          <div style="font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;line-height:1;color:var(--warning);">{{ total_views }}</div>
+          <div style="color:var(--muted);font-size:.78rem;margin-top:6px;">{{ conversion_rate }}% conversion rate</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CHARTS ROW ── -->
+    <div class="row g-4 mb-4">
+
+      <!-- Registrations over time -->
+      <div class="col-lg-8">
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;">Registrations Over Time</div>
+              <div style="color:var(--muted);font-size:.78rem;">Last 14 days</div>
+            </div>
+            <div style="background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.2);border-radius:50px;padding:4px 12px;font-size:.72rem;font-weight:700;color:var(--brand);">
+              +{{ total_regs }} total
+            </div>
+          </div>
+          <div style="height:240px;position:relative;"><canvas id="regChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Check-in analytics pie -->
+      <div class="col-lg-4">
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;height:100%;">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:4px;">Check-In Status</div>
+          <div style="color:var(--muted);font-size:.78rem;margin-bottom:20px;">Who showed up</div>
+          <div style="height:180px;position:relative;"><canvas id="checkinChart"></canvas></div>
+          <!-- Legend -->
+          <div class="d-flex justify-content-center gap-4 mt-3">
+            <div style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted);">
+              <div style="width:10px;height:10px;border-radius:50%;background:var(--success);flex-shrink:0;"></div>Checked in ({{ checked_in }})
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted);">
+              <div style="width:10px;height:10px;border-radius:50%;background:var(--surface-2,#222);flex-shrink:0;border:1px solid var(--border);"></div>No show ({{ no_show }})
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RATING & RECENT REGISTRATIONS ── -->
+    <div class="row g-4 mb-4">
+
+      <!-- Rating breakdown -->
+      {% if avg_rating %}
+      <div class="col-lg-4">
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:16px;">Review Summary</div>
+          <div style="text-align:center;margin-bottom:16px;">
+            <div style="font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;color:var(--warning);line-height:1;">{{ avg_rating }}</div>
+            <div style="color:var(--warning);font-size:1.1rem;margin:4px 0;">★★★★★</div>
+            <div style="color:var(--muted);font-size:.78rem;">{{ review_count }} review{{ review_count|pluralize }}</div>
+          </div>
+          {% for star, count in rating_breakdown %}
+            <div class="d-flex align-items-center gap-2 mb-1" style="font-size:.78rem;">
+              <span style="color:var(--muted);width:14px;text-align:right;">{{ star }}</span>
+              <i class="bi bi-star-fill" style="color:var(--warning);font-size:.65rem;"></i>
+              <div class="progress-track" style="flex:1;"><div class="progress-fill" style="width:{{ count }}%;background:var(--warning);"></div></div>
+              <span style="color:var(--muted);width:24px;">{{ count }}%</span>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Recent registrations -->
+      <div class="col-lg-{% if avg_rating %}8{% else %}12{% endif %}">
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:16px;">Recent Registrations</div>
+          {% for reg in recent_registrations %}
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.875rem;flex-shrink:0;color:#fff;">
+                {{ reg.user.username|first|upper }}
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:.875rem;font-weight:500;">{{ reg.user.get_full_name|default:reg.user.username }}</div>
+                <div style="color:var(--muted);font-size:.75rem;">{{ reg.registered_at|timesince }} ago</div>
+              </div>
+              {% if reg.checked_in %}
+                <span style="background:rgba(25,200,120,.1);color:var(--success);font-size:.7rem;padding:2px 8px;border-radius:50px;font-weight:700;flex-shrink:0;">✓ In</span>
+              {% else %}
+                <span style="background:var(--surface);color:var(--muted);font-size:.7rem;padding:2px 8px;border-radius:50px;flex-shrink:0;">Pending</span>
+              {% endif %}
+            </div>
+          {% empty %}
+            <p style="color:var(--muted);font-size:.875rem;">No registrations yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ── WAITLIST ── -->
+    {% if waitlist_count > 0 %}
+    <div style="background:rgba(255,190,11,.06);border:1px solid rgba(255,190,11,.2);border-radius:var(--radius);padding:20px;margin-bottom:24px;">
+      <div class="d-flex align-items-center gap-3">
+        <i class="bi bi-clock-history" style="color:var(--warning);font-size:1.4rem;flex-shrink:0;"></i>
+        <div>
+          <div style="font-weight:700;font-size:.95rem;">{{ waitlist_count }} people on the waitlist</div>
+          <div style="color:var(--muted);font-size:.82rem;">They'll be notified automatically if someone cancels.</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// ── Registrations over time ──
+new Chart(document.getElementById('regChart'), {
+  type: 'line',
+  data: {
+    labels:   {{ chart_labels|safe }},
+    datasets: [{
+      label:           'Registrations',
+      data:            {{ chart_data|safe }},
+      borderColor:     '#FF4D6D',
+      backgroundColor: 'rgba(255,77,109,.08)',
+      borderWidth:     2.5,
+      pointBackgroundColor: '#FF4D6D',
+      pointRadius:     4,
+      pointHoverRadius:6,
+      fill:            true,
+      tension:         .4,
+    }]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ display:false } },
+    scales:{
+      x:{ grid:{ color:'#242424' }, ticks:{ color:'#767676', font:{ size:10 } } },
+      y:{ grid:{ color:'#242424' }, ticks:{ color:'#767676', stepSize:1 }, beginAtZero:true },
+    }
+  }
+});
+
+// ── Check-in doughnut ──
+new Chart(document.getElementById('checkinChart'), {
+  type: 'doughnut',
+  data: {
+    labels:   ['Checked In', 'No Show'],
+    datasets: [{
+      data:            [{{ checked_in }}, {{ no_show }}],
+      backgroundColor: ['#19C878', '#242424'],
+      borderColor:     '#111111',
+      borderWidth:     4,
+    }]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ display:false } },
+    cutout:'72%',
+  }
+});
+</script>
+{% endblock %}

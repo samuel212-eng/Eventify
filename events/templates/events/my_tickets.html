@@ -16,6 +16,19 @@
         <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--warning);">{{ streak }}-event streak</div>
         <div style="color:var(--muted);font-size:.75rem;">Keep it up!</div>
       </div>
+
+{#     5   GAMIFICATION#}
+                {% if points %}
+        <div style="background:linear-gradient(135deg,rgba(255,190,11,.08),rgba(255,190,11,.04));border:1px solid rgba(255,190,11,.2);border-radius:var(--radius-sm);padding:14px 20px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="font-size:1.8rem;">{% if points.level == 'Legend' %}🏆{% elif points.level == 'VIP' %}💎{% elif points.level == 'Enthusiast' %}🔥{% elif points.level == 'Regular' %}⭐{% elif points.level == 'Explorer' %}🌍{% else %}🌱{% endif %}</div>
+            <div>
+              <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--warning);">{{ points.level }}</div>
+              <div style="color:var(--muted);font-size:.75rem;">{{ points.total }} points earned</div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
     {% endif %}
   </div>
 </div>

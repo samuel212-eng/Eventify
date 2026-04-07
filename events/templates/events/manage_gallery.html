@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Gallery: {{ event.title }} — Eventify{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+      <a href="{% url 'event_detail' event.slug %}" style="color:var(--muted);font-size:.855rem;">← Back to event</a>
+      <h1 style="font-size:1.8rem;margin-top:8px;">🖼️ Event Gallery</h1>
+      <p style="color:var(--muted);font-size:.875rem;">{{ gallery.count }} image{{ gallery.count|pluralize }}</p>
+    </div>
+    <a href="{% url 'event_edit' event.pk %}" class="btn-ghost" style="font-size:.82rem;padding:8px 18px;">
+      <i class="bi bi-pencil"></i>Edit Event
+    </a>
+  </div>
+</div>
+
+<div class="container mt-5 mb-5">
+
+  <!-- Upload area -->
+  <div id="dropZone" style="
+    background:var(--card-bg);border:2px dashed var(--border);
+    border-radius:var(--radius);padding:40px;text-align:center;
+    margin-bottom:32px;cursor:pointer;transition:all .2s;
+  "
+  onclick="document.getElementById('fileInput').click()"
+  ondragover="event.preventDefault();this.style.borderColor='var(--brand)';this.style.background='rgba(255,77,109,.05)'"
+  ondragleave="this.style.borderColor='var(--border)';this.style.background='var(--card-bg)'"
+  ondrop="handleDrop(event)">
+    <div style="font-size:2.5rem;margin-bottom:12px;">📸</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:6px;">
+      Drop images here or click to upload
+    </div>
+    <div style="color:var(--muted);font-size:.855rem;">JPG, PNG, WebP · Max 10 images at once · Max 5MB each</div>
+  </div>
+
+  <!-- Hidden upload form -->
+  <form method="POST" enctype="multipart/form-data" id="uploadForm">
+    {% csrf_token %}
+    <input type="file" id="fileInput" name="images" multiple accept="image/*" style="display:none"
+           onchange="previewFiles(this.files)">
+    <input type="text" name="caption" id="captionInput" placeholder="Caption for these photos (optional)"
+           style="display:none;width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;outline:none;">
+    <button type="submit" id="uploadBtn" style="display:none;" class="btn-brand">
+      <i class="bi bi-cloud-upload"></i>Upload Photos
+    </button>
+  </form>
+
+  <!-- Preview thumbnails before upload -->
+  <div id="previewGrid" class="row g-2 mb-4"></div>
+
+  <!-- Existing gallery -->
+  {% if gallery %}
+    <h3 style="font-size:1.2rem;margin-bottom:16px;">Current Gallery</h3>
+    <div class="row g-3" id="galleryGrid">
+      {% for img in gallery %}
+        <div class="col-6 col-md-4 col-lg-3" id="img_{{ img.pk }}">
+          <div style="position:relative;aspect-ratio:1;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border);">
+            <img src="{{ img.image.url }}" alt="{{ img.caption }}"
+                 style="width:100%;height:100%;object-fit:cover;cursor:pointer;transition:transform .3s;"
+                 onclick="openLightbox('{{ img.image.url }}')"
+                 onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            <!-- Delete button -->
+            <button onclick="deleteImage({{ img.pk }})" style="
+              position:absolute;top:6px;right:6px;
+              width:28px;height:28px;border-radius:50%;
+              background:rgba(0,0,0,.75);border:none;cursor:pointer;
+              color:#fff;font-size:.8rem;display:flex;align-items:center;justify-content:center;
+              transition:background .2s;
+            " onmouseover="this.style.background='var(--brand)'" onmouseout="this.style.background='rgba(0,0,0,.75)'">
+              <i class="bi bi-trash3"></i>
+            </button>
+            {% if img.caption %}
+              <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.75));padding:20px 8px 6px;color:#fff;font-size:.72rem;">{{ img.caption }}</div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon"><i class="bi bi-images"></i></span>
+      <h4>No gallery photos yet</h4>
+      <p>Upload photos of your event — they'll appear in a swipeable gallery on the event page.</p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;align-items:center;justify-content:center;">
+  <img id="lightboxImg" style="max-width:92vw;max-height:88vh;border-radius:var(--radius-sm);box-shadow:0 24px 64px rgba(0,0,0,.6);">
+  <button onclick="closeLightbox()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,.1);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.1rem;">✕</button>
+</div>
+
+<script>
+function previewFiles(files) {
+  const grid    = document.getElementById('previewGrid');
+  const caption = document.getElementById('captionInput');
+  const btn     = document.getElementById('uploadBtn');
+  grid.innerHTML = '';
+
+  if (!files.length) return;
+
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const col = document.createElement('div');
+      col.className = 'col-4 col-md-2';
+      col.innerHTML = `<div style="aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--border);">
+        <img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">
+      </div>`;
+      grid.appendChild(col);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  caption.style.display = 'block';
+  btn.style.display     = 'inline-flex';
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').style.borderColor   = 'var(--border)';
+  document.getElementById('dropZone').style.background    = 'var(--card-bg)';
+  const input = document.getElementById('fileInput');
+  input.files = e.dataTransfer.files;
+  previewFiles(e.dataTransfer.files);
+}
+
+function deleteImage(pk) {
+  if (!confirm('Delete this photo?')) return;
+  fetch(`/gallery/${pk}/delete/`, {
+    method:  'POST',
+    headers: { 'X-CSRFToken': getCsrf() }
+  }).then(r => r.json()).then(data => {
+    if (data.success) {
+      const el = document.getElementById(`img_${pk}`);
+      el.style.transition = 'opacity .3s,transform .3s';
+      el.style.opacity    = '0';
+      el.style.transform  = 'scale(.9)';
+      setTimeout(() => el.remove(), 300);
+      showToast('Photo deleted', 'info');
+    }
+  });
+}
+
+function openLightbox(src) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightboxImg').src = src;
+  lb.style.display = 'flex';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').style.display = 'none';
+}
+</script>
+{% endblock %}

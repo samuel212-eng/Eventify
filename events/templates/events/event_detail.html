@@ -170,6 +170,65 @@ function toggleSave(eventPk) {
       <h3 style="margin:1.5rem 0 1rem;">About this event</h3>
       <div style="color:var(--muted);line-height:1.8;white-space:pre-line;">{{ event.description }}</div>
 
+{#    SPEAKERS#}
+    {% if event.speakers.all %}
+<div style="margin-top:2.5rem;">
+  <h3 style="font-size:1.2rem;margin-bottom:20px;">
+    <i class="bi bi-mic-fill me-2" style="color:var(--brand);"></i>Speakers & Performers
+  </h3>
+  <div class="row g-3">
+    {% for speaker in event.speakers.all %}
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="speaker-card" style="
+          background:var(--card-bg);border:1px solid var(--border);
+          border-radius:var(--radius);padding:20px;text-align:center;
+          transition:all .25s;cursor:default;position:relative;overflow:hidden;
+        "
+        onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='rgba(255,77,109,.4)';this.style.boxShadow='0 16px 40px rgba(0,0,0,.4)'"
+        onmouseout="this.style.transform='';this.style.borderColor='var(--border)';this.style.boxShadow=''">
+
+          <!-- Shimmer on hover -->
+          <div class="speaker-shimmer" style="position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);transition:left .5s;"></div>
+
+          {% if speaker.photo %}
+            <img src="{{ speaker.photo.url }}" alt="{{ speaker.name }}"
+                 style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--border);margin-bottom:12px;display:block;margin-left:auto;margin-right:auto;">
+          {% else %}
+            <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-dark));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;color:#fff;margin:0 auto 12px;">
+              {{ speaker.name|first|upper }}
+            </div>
+          {% endif %}
+
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:3px;">{{ speaker.name }}</div>
+          {% if speaker.title %}
+            <div style="color:var(--muted);font-size:.75rem;margin-bottom:8px;line-height:1.4;">{{ speaker.title }}</div>
+          {% endif %}
+          {% if speaker.bio %}
+            <div style="color:var(--muted);font-size:.75rem;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ speaker.bio }}</div>
+          {% endif %}
+
+          <!-- Social links -->
+          {% if speaker.twitter or speaker.linkedin %}
+            <div class="d-flex justify-content-center gap-2 mt-2">
+              {% if speaker.twitter %}
+                <a href="https://twitter.com/{{ speaker.twitter }}" target="_blank" style="color:var(--muted);font-size:.85rem;transition:color .15s;" onmouseover="this.style.color='#1DA1F2'" onmouseout="this.style.color='var(--muted)'"><i class="bi bi-twitter-x"></i></a>
+              {% endif %}
+              {% if speaker.linkedin %}
+                <a href="{{ speaker.linkedin }}" target="_blank" style="color:var(--muted);font-size:.85rem;transition:color .15s;" onmouseover="this.style.color='#0A66C2'" onmouseout="this.style.color='var(--muted)'"><i class="bi bi-linkedin"></i></a>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+<style>
+.speaker-card:hover .speaker-shimmer { left: 150% !important; }
+</style>
+{% endif %}
+
+
 {#    GOOGLE MAPS#}
             <div style="margin-top:2rem;">
       <h4 style="font-family:'Syne',sans-serif;font-size:1.1rem;margin-bottom:12px;">
@@ -389,6 +448,91 @@ function toggleSave(eventPk) {
 </div>
 
 
+        <!--
+          4. FAQ ACCORDION -->
+        {% if event.faqs.all %}
+        <div style="margin-top:2.5rem;" id="faq">
+          <h3 style="font-size:1.2rem;margin-bottom:16px;">
+            <i class="bi bi-question-circle-fill me-2" style="color:var(--brand);"></i>FAQ
+          </h3>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            {% for faq in event.faqs.all %}
+              <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+                <button onclick="toggleFAQ({{ forloop.counter }})" style="
+                  width:100%;background:none;border:none;
+                  padding:14px 18px;text-align:left;cursor:pointer;
+                  display:flex;justify-content:space-between;align-items:center;
+                  color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;
+                ">
+                  <span>{{ faq.question }}</span>
+                  <i class="bi bi-chevron-down faq-icon-{{ forloop.counter }}" style="color:var(--brand);transition:transform .2s;flex-shrink:0;margin-left:12px;"></i>
+                </button>
+                <div id="faq_{{ forloop.counter }}" style="display:none;padding:0 18px 14px;color:var(--muted);font-size:.875rem;line-height:1.65;">
+                  {{ faq.answer }}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        <script>
+        function toggleFAQ(n) {
+          const body = document.getElementById(`faq_${n}`);
+          const icon = document.querySelector(`.faq-icon-${n}`);
+          const open = body.style.display === 'block';
+          body.style.display  = open ? 'none' : 'block';
+          icon.style.transform = open ? '' : 'rotate(180deg)';
+        }
+        </script>
+        {% endif %}
+
+{#    SPONSER SHOWCASE#}
+{% if event.sponsors.all %}
+<div style="margin-top:2.5rem;padding-top:2rem;border-top:1px solid var(--border);">
+  <h3 style="font-size:1rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:20px;text-align:center;">Sponsors &amp; Partners</h3>
+
+  {% regroup event.sponsors.all by tier as sponsor_tiers %}
+  {% for tier_group in sponsor_tiers %}
+    <div style="margin-bottom:20px;text-align:center;">
+      {% if tier_group.grouper == 'platinum' %}
+        <div style="font-size:.7rem;color:var(--brand);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">⭐ Platinum</div>
+        <div class="d-flex justify-content-center flex-wrap gap-4">
+          {% for sponsor in tier_group.list %}
+            <a href="{{ sponsor.website }}" target="_blank" rel="noopener" style="
+              background:var(--surface);border:1px solid rgba(255,77,109,.2);
+              border-radius:var(--radius-sm);padding:16px 28px;
+              display:flex;align-items:center;justify-content:center;
+              transition:all .2s;min-width:140px;
+            " onmouseover="this.style.borderColor='var(--brand)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,77,109,.2)';this.style.transform=''">
+              {% if sponsor.logo %}
+                <img src="{{ sponsor.logo.url }}" alt="{{ sponsor.name }}" style="height:40px;max-width:120px;object-fit:contain;filter:brightness(1.2);">
+              {% else %}
+                <span style="font-weight:700;color:var(--text);font-size:.95rem;">{{ sponsor.name }}</span>
+              {% endif %}
+            </a>
+          {% endfor %}
+        </div>
+      {% elif tier_group.grouper == 'gold' %}
+        <div style="font-size:.68rem;color:var(--warning);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;">🥇 Gold</div>
+        <div class="d-flex justify-content-center flex-wrap gap-3">
+          {% for sponsor in tier_group.list %}
+            <a href="{{ sponsor.website }}" target="_blank" rel="noopener" style="background:var(--surface);border:1px solid rgba(255,190,11,.15);border-radius:var(--radius-sm);padding:12px 20px;display:flex;align-items:center;min-width:110px;justify-content:center;transition:all .2s;" onmouseover="this.style.borderColor='var(--warning)'" onmouseout="this.style.borderColor='rgba(255,190,11,.15)'">
+              {% if sponsor.logo %}<img src="{{ sponsor.logo.url }}" alt="{{ sponsor.name }}" style="height:28px;max-width:90px;object-fit:contain;">{% else %}<span style="font-size:.875rem;color:var(--muted-2);">{{ sponsor.name }}</span>{% endif %}
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="d-flex justify-content-center flex-wrap gap-2 mt-2">
+          {% for sponsor in tier_group.list %}
+            <a href="{{ sponsor.website }}" target="_blank" rel="noopener" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 16px;display:flex;align-items:center;transition:all .2s;" onmouseover="this.style.borderColor='var(--brand)'" onmouseout="this.style.borderColor='var(--border)'">
+              {% if sponsor.logo %}<img src="{{ sponsor.logo.url }}" alt="{{ sponsor.name }}" style="height:20px;max-width:80px;object-fit:contain;">{% else %}<span style="font-size:.8rem;color:var(--muted);">{{ sponsor.name }}</span>{% endif %}
+            </a>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
 
 
       {% if user.is_authenticated and user != event.organizer %}
@@ -425,10 +569,58 @@ function toggleSave(eventPk) {
   </a>
 </div>
 
-
-        <div class="price-tag mb-3" style="font-size:2rem;">
-          {% if event.price == 0 %}Free{% else %}KES {{ event.price }}{% endif %}
+    {# CAPACITY TIERS   #}
+          {% if event.tiers.all %}
+    <div style="margin-bottom:16px;">
+      <div style="color:var(--muted);font-size:.78rem;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Select your ticket</div>
+      {% for tier in event.tiers.filter.is_active %}
+        {% if not tier.is_sold_out %}
+        <label style="display:block;cursor:pointer;margin-bottom:8px;">
+          <input type="radio" name="selected_tier" value="{{ tier.pk }}" style="display:none;" {% if forloop.first %}checked{% endif %}>
+          <div class="tier-option" style="
+            background:var(--surface);border:1.5px solid var(--border);
+            border-radius:var(--radius-sm);padding:12px 14px;
+            transition:all .15s;
+          ">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div style="font-weight:700;font-size:.9rem;">{{ tier.name }}</div>
+                {% if tier.perks_list %}
+                  <div style="margin-top:4px;">
+                    {% for perk in tier.perks_list %}
+                      <div style="color:var(--success);font-size:.72rem;display:flex;align-items:center;gap:3px;">
+                        <i class="bi bi-check2"></i>{{ perk }}
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              <div style="text-align:right;flex-shrink:0;">
+                <div style="font-family:'Syne',sans-serif;font-weight:800;color:var(--brand);font-size:1rem;">KES {{ tier.price|floatformat:0 }}</div>
+                <div style="color:var(--muted);font-size:.72rem;">{{ tier.spots_left }} left</div>
+              </div>
+            </div>
+          </div>
+        </label>
+        {% else %}
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;opacity:.5;margin-bottom:8px;">
+          <div class="d-flex justify-content-between">
+            <span style="font-weight:600;font-size:.9rem;">{{ tier.name }}</span>
+            <span style="color:var(--danger);font-size:.75rem;font-weight:700;">SOLD OUT</span>
+          </div>
         </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <style>
+    input[type=radio]:checked + .tier-option {
+      border-color: var(--brand) !important;
+      background: rgba(255,77,109,.06) !important;
+    }
+    </style>
+    {% endif %}
+
+
 
         <div class="mb-3" style="color:var(--muted);font-size:.9rem;">
           <div class="d-flex justify-content-between mb-2">
@@ -470,6 +662,9 @@ function toggleSave(eventPk) {
                 <div style="color:var(--muted);font-size:.72rem;margin-top:.25rem;">Show this at the door</div>
               </div>
             {% endif %}
+              <a href="{% url 'view_gallery' event.slug %}" class="btn-ghost" style="font-size:.82rem;padding:8px 18px; margin-left:8px;">
+  🖼️ View Gallery
+</a>
             <a href="{% url 'my_tickets' %}" class="btn btn-outline-brand w-100">View My Tickets</a>
 
           {% elif event.is_full %}
@@ -599,6 +794,9 @@ function toggleSave(eventPk) {
 
           {% if user == event.organizer %}
             <hr>
+              <a href="{% url 'manage_gallery' event.pk %}" class="btn-ghost" style="font-size:.82rem;padding:8px 18px; margin-left:8px;">
+  🖼️ Manage Gallery
+</a>
             <div class="d-flex gap-2 mt-3">
               <a href="{% url 'event_edit' event.pk %}" class="btn btn-outline-brand btn-sm flex-fill">
                 <i class="bi bi-pencil me-1"></i>Edit
@@ -660,6 +858,7 @@ document.getElementById('star-picker')?.addEventListener('mouseleave', () => {
       <a href="{% url 'my_tickets' %}" class="btn-brand" style="padding:10px 20px;font-size:.855rem;flex-shrink:0;">
         <i class="bi bi-ticket-perforated-fill"></i>My Tickets
       </a>
+
     {% elif event.is_full %}
       {% if user_on_waitlist %}
         <div class="mob-meta" style="color:var(--warning);font-weight:600;flex-shrink:0;">
@@ -705,5 +904,207 @@ document.getElementById('star-picker')?.addEventListener('mouseleave', () => {
 </div>
 {% endif %}
 
+
+
+{#AI EVENT ASSISTANT WIDGET#}
+<!-- Floating chat button -->
+<div id="chatBubble" onclick="toggleChat()" style="
+  position:fixed; bottom:28px; left:24px;
+  width:54px; height:54px; border-radius:50%;
+  background:linear-gradient(135deg,#6C3AFF,#4A1FBF);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; z-index:990;
+  box-shadow:0 6px 24px rgba(108,58,255,.45);
+  transition:transform .2s, box-shadow .2s;
+" onmouseover="this.style.transform='scale(1.08)'"
+   onmouseout="this.style.transform='scale(1)'">
+  <i class="bi bi-robot" style="color:#fff;font-size:1.3rem;" id="chatIcon"></i>
+  <!-- Unread dot -->
+  <div style="position:absolute;top:-2px;right:-2px;width:14px;height:14px;border-radius:50%;background:var(--brand);border:2px solid var(--dark);display:flex;align-items:center;justify-content:center;">
+    <span style="color:#fff;font-size:.55rem;font-weight:700;">AI</span>
+  </div>
+</div>
+
+<!-- Chat window -->
+<div id="chatWindow" style="
+  display:none; position:fixed; bottom:96px; left:24px;
+  width:320px; max-height:440px;
+  background:var(--card-bg); border:1px solid var(--border);
+  border-radius:20px; z-index:991;
+  box-shadow:0 24px 64px rgba(0,0,0,.5);
+  flex-direction:column; overflow:hidden;
+  animation:fadeUp .25s ease both;
+">
+
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#6C3AFF,#4A1FBF);padding:16px 18px;display:flex;align-items:center;gap:10px;">
+    <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <i class="bi bi-robot" style="color:#fff;font-size:1rem;"></i>
+    </div>
+    <div style="flex:1;">
+      <div style="color:#fff;font-weight:700;font-size:.9rem;font-family:'Syne',sans-serif;">Event Assistant</div>
+      <div style="color:rgba(255,255,255,.65);font-size:.72rem;">Ask me anything about this event</div>
+    </div>
+    <button onclick="toggleChat()" style="background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:1.1rem;padding:0;">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+
+  <!-- Messages -->
+  <div id="chatMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;max-height:280px;">
+    <!-- Welcome message -->
+    <div class="ai-msg">
+      <div style="background:rgba(108,58,255,.1);border:1px solid rgba(108,58,255,.2);border-radius:12px 12px 12px 0;padding:10px 14px;font-size:.855rem;line-height:1.5;color:var(--muted-2);max-width:90%;">
+        👋 Hi! I know everything about <strong style="color:var(--text);">{{ event.title }}</strong>. Ask me about the schedule, tickets, location, speakers — anything!
+      </div>
+    </div>
+
+    <!-- Suggested questions -->
+    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:2px;">
+        {% for q in suggested_questions %}
+  <button onclick="sendSuggestion('{{ q }}')" ...>
+    {{ q }}
+  </button>
+{% endfor %}
+{#      {% for q in "What time does it start?,How do I get there?,Is parking available?,What's included in the ticket?" | split:"," %}#}
+        <button onclick="sendSuggestion('{{ q }}')" style="
+          background:var(--surface);border:1px solid var(--border);
+          border-radius:50px;padding:4px 10px;font-size:.72rem;
+          color:var(--muted-2);cursor:pointer;transition:all .15s;
+          white-space:nowrap;
+        " onmouseover="this.style.borderColor='#6C3AFF';this.style.color='#6C3AFF'"
+           onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted-2)'">
+          {{ q }}
+        </button>
+{#      {% endfor %}#}
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div style="padding:12px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;">
+    <textarea id="chatInput" rows="1" placeholder="Ask about this event..."
+      style="
+        flex:1;background:var(--surface);border:1px solid var(--border);
+        color:var(--text);border-radius:10px;padding:8px 12px;
+        font-size:.855rem;outline:none;resize:none;max-height:80px;
+        font-family:'DM Sans',sans-serif;line-height:1.4;
+      "
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"
+      oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'">
+    </textarea>
+    <button onclick="sendChat()" id="sendBtn" style="
+      width:36px;height:36px;border-radius:50%;flex-shrink:0;
+      background:linear-gradient(135deg,#6C3AFF,#4A1FBF);
+      border:none;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      transition:opacity .2s;
+    ">
+      <i class="bi bi-send-fill" style="color:#fff;font-size:.8rem;"></i>
+    </button>
+  </div>
+</div>
+
+<script>
+const EVENT_PK = {{ event.pk }};
+let chatOpen = false;
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  const win  = document.getElementById('chatWindow');
+  const icon = document.getElementById('chatIcon');
+  win.style.display  = chatOpen ? 'flex' : 'none';
+  icon.className     = chatOpen ? 'bi bi-x-lg' : 'bi bi-robot';
+  if (chatOpen) document.getElementById('chatInput').focus();
+}
+
+function appendMsg(text, isUser) {
+  const msgs = document.getElementById('chatMessages');
+  const el   = document.createElement('div');
+  el.style.display         = 'flex';
+  el.style.justifyContent  = isUser ? 'flex-end' : 'flex-start';
+
+  el.innerHTML = `<div style="
+    background:${isUser ? 'linear-gradient(135deg,#6C3AFF,#4A1FBF)' : 'var(--surface)'};
+    color:${isUser ? '#fff' : 'var(--muted-2)'};
+    border:${isUser ? 'none' : '1px solid var(--border)'};
+    border-radius:${isUser ? '12px 12px 0 12px' : '12px 12px 12px 0'};
+    padding:10px 14px; font-size:.855rem; line-height:1.55;
+    max-width:88%; word-break:break-word;
+  ">${text}</div>`;
+
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function appendTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const el   = document.createElement('div');
+  el.id      = 'typingIndicator';
+  el.style.display = 'flex';
+  el.innerHTML = `<div style="
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:12px 12px 12px 0;padding:10px 16px;
+    display:flex;gap:4px;align-items:center;
+  ">
+    <span style="width:7px;height:7px;border-radius:50%;background:#6C3AFF;animation:pulse 1s .0s infinite;display:block;"></span>
+    <span style="width:7px;height:7px;border-radius:50%;background:#6C3AFF;animation:pulse 1s .2s infinite;display:block;"></span>
+    <span style="width:7px;height:7px;border-radius:50%;background:#6C3AFF;animation:pulse 1s .4s infinite;display:block;"></span>
+  </div>`;
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  document.getElementById('typingIndicator')?.remove();
+}
+
+function sendSuggestion(q) {
+  document.getElementById('chatInput').value = q;
+  sendChat();
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg   = input.value.trim();
+  if (!msg) return;
+
+  appendMsg(msg, true);
+  input.value = '';
+  input.style.height = 'auto';
+
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  appendTyping();
+
+  try {
+    const res  = await fetch(`/events/${EVENT_PK}/ai-chat/`, {
+      method:  'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'X-CSRFToken':   getCsrf(),
+      },
+      body: JSON.stringify({ message: msg }),
+    });
+    const data = await res.json();
+    removeTyping();
+    appendMsg(data.answer || data.error || 'Sorry, something went wrong.', false);
+  } catch(e) {
+    removeTyping();
+    appendMsg("Couldn't reach the server. Please try again.", false);
+  }
+
+  btn.disabled = false;
+  input.focus();
+}
+</script>
+
+<style>
+.ai-msg { display:flex; }
+@keyframes pulse { 0%,100%{opacity:.3;transform:scale(.85)} 50%{opacity:1;transform:scale(1)} }
+@media(max-width:576px) {
+  #chatWindow { left:12px; right:12px; width:auto; }
+  #chatBubble { bottom:92px; }
+}
+</style>
 
 {% endblock %}
