@@ -33,7 +33,7 @@ class EventForm(forms.ModelForm):
         model  = Event
         # Show these fields in the form (not organizer — we set that automatically)
         fields = ['title', 'description', 'category', 'date', 'location',
-                  'image', 'price', 'capacity', 'is_published']
+                  'image', 'price', 'capacity', 'is_published','is_virtual', 'virtual_link']
 
         widgets = {
             'description': forms.Textarea(attrs={'rows': 5}),

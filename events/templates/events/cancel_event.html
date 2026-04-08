@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Cancel Event — Eventify{% endblock %}
+{% block content %}
+<div class="container my-5" style="max-width:520px;">
+  <div style="background:var(--card-bg);border:1px solid rgba(255,77,109,.3);border-radius:20px;padding:2.5rem;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:2.5rem;margin-bottom:10px;">⚠️</div>
+      <h2 style="font-size:1.4rem;margin-bottom:6px;color:var(--brand);">Cancel This Event?</h2>
+      <p style="color:var(--muted);font-size:.875rem;">
+        <strong style="color:var(--text);">{{ event.title }}</strong> has
+        <strong style="color:var(--brand);">{{ event.registrations.count }} registered attendee{{ event.registrations.count|pluralize }}</strong>.
+        They will all be notified by email.
+      </p>
+    </div>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="mb-4">
+        <label class="form-label">Reason for cancellation <span style="color:var(--brand);">*</span></label>
+        <textarea name="reason" rows="4" required
+          style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:10px;outline:none;resize:vertical;"
+          placeholder="e.g. The venue has become unavailable due to unforeseen circumstances. We sincerely apologise..."></textarea>
+        <div style="color:var(--muted);font-size:.75rem;margin-top:4px;">This message will be sent to all attendees.</div>
+      </div>
+      {% if event.price > 0 %}
+      <div style="background:rgba(25,200,120,.08);border:1px solid rgba(25,200,120,.2);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px;font-size:.82rem;color:var(--success);">
+        <i class="bi bi-info-circle me-2"></i>Paid attendees will receive refund instructions in their cancellation email.
+      </div>
+      {% endif %}
+      <button type="submit" class="btn-brand w-100" style="justify-content:center;padding:12px;background:var(--brand);">
+        Yes, Cancel This Event
+      </button>
+    </form>
+    <a href="{% url 'event_detail' event.slug %}" style="display:block;text-align:center;margin-top:14px;color:var(--muted);font-size:.855rem;">Keep the event — go back</a>
+  </div>
+</div>
+{% endblock %}

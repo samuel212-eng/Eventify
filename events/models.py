@@ -85,6 +85,12 @@ class Event(models.Model):
     class Meta:
         ordering = ['date']
 
+    virtual_link = models.URLField(
+        blank=True,
+        help_text="Zoom/Google Meet/YouTube Live link for online events"
+    )
+    is_virtual = models.BooleanField(default=False)
+
 
 # ──────────────────────────────────────────────
 class Registration(models.Model):

@@ -494,3 +494,24 @@ from django.shortcuts import get_object_or_404, redirect
 def event_detail_redirect(request, pk):
     event = get_object_or_404(Event, pk=pk)
     return redirect('event_detail', slug=event.slug)
+
+
+@login_required
+def qr_scanner_view(request, event_pk):
+    """Camera-based QR scanner page for check-in"""
+    from django.contrib import messages
+    event = get_object_or_404(Event, pk=event_pk)
+
+    if event.organizer != request.user:
+        messages.error(request, "Only the event organiser can access the scanner.")
+        return redirect('event_detail', slug=event.slug)
+
+    from .models import Registration
+    total_regs  = Registration.objects.filter(event=event).count()
+    checked_in  = Registration.objects.filter(event=event, checked_in=True).count()
+
+    return render(request, 'events/qr_scanner.html', {
+        'event':      event,
+        'total_regs': total_regs,
+        'checked_in': checked_in,
+    })

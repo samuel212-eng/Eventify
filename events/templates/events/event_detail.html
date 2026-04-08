@@ -653,6 +653,27 @@ function toggleSave(eventPk) {
             <div class="alert alert-success text-center mb-3" style="font-size:.875rem;">
               <i class="bi bi-check-circle-fill me-1"></i>You're registered!
             </div>
+                 {#calendar#}
+              <div class="d-flex gap-2 flex-wrap" style="margin-top:12px;">
+
+  <!-- iCal / Apple Calendar / Google Calendar -->
+  <a href="{% url 'export_to_calendar' event.pk %}"
+     style="display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:6px 14px;color:var(--muted);font-size:.78rem;font-weight:600;transition:all .2s;"
+     onmouseover="this.style.borderColor='var(--brand)';this.style.color='var(--brand)'"
+     onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'"
+     download>
+    <i class="bi bi-calendar-plus"></i>Add to Calendar
+  </a>
+
+  <!-- Google Calendar direct link -->
+  <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text={{ event.title|urlencode }}&dates={{ event.date|date:'Ymd' }}T{{ event.date|date:'His' }}/{{ event.date|date:'Ymd' }}T{{ event.date|date:'His' }}&details={{ event.description|truncatechars:200|urlencode }}&location={{ event.location|urlencode }}"
+     target="_blank" rel="noopener"
+     style="display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:6px 14px;color:var(--muted);font-size:.78rem;font-weight:600;transition:all .2s;"
+     onmouseover="this.style.borderColor='#4285F4';this.style.color='#4285F4'"
+     onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+    <i class="bi bi-google"></i>Google Calendar
+  </a>
+</div>
             {% if user_registration %}
               <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1rem;text-align:center;">
                 <div style="color:var(--muted);font-size:.75rem;margin-bottom:.25rem;">Your Check-In Code</div>
@@ -662,6 +683,30 @@ function toggleSave(eventPk) {
                 <div style="color:var(--muted);font-size:.72rem;margin-top:.25rem;">Show this at the door</div>
               </div>
             {% endif %}
+
+
+
+              {% if user_is_registered and event.is_virtual and event.virtual_link %}
+  <div style="margin-bottom:14px;">
+    <a href="{{ event.virtual_link }}" target="_blank" rel="noopener"
+       class="btn-brand w-100"
+       style="justify-content:center;padding:11px;background:linear-gradient(135deg,#4285F4,#1967D2);">
+      <i class="bi bi-camera-video-fill"></i>Join Online
+    </a>
+    <p style="color:var(--muted);font-size:.72rem;text-align:center;margin-top:6px;">
+      Link active at event start time
+    </p>
+  </div>
+{% endif %}
+
+<!-- Virtual badge on event card and detail page: -->
+{% if event.is_virtual %}
+  <span style="background:rgba(66,133,244,.12);color:#4285F4;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:50px;display:inline-flex;align-items:center;gap:3px;">
+    <i class="bi bi-camera-video"></i>Online Event
+  </span>
+{% endif %}
+
+
               <a href="{% url 'view_gallery' event.slug %}" class="btn-ghost" style="font-size:.82rem;padding:8px 18px; margin-left:8px;">
   🖼️ View Gallery
 </a>
@@ -1003,6 +1048,24 @@ document.getElementById('star-picker')?.addEventListener('mouseleave', () => {
     </button>
   </div>
 </div>
+
+    <!-- Embed code that organisers copy: -->
+<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-top:16px;">
+  <div style="font-size:.78rem;color:var(--muted);margin-bottom:8px;font-weight:600;">Embed this event on your website</div>
+  <div style="position:relative;">
+    <code style="display:block;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;font-size:.75rem;color:var(--muted-2);word-break:break-all;line-height:1.5;" id="embedCode">
+      &lt;iframe src="{{ request.scheme }}://{{ request.get_host }}/events/{{ event.slug }}/embed/" width="100%" height="500" frameborder="0" style="border-radius:12px;"&gt;&lt;/iframe&gt;
+    </code>
+    <button onclick="copyEmbed()" style="position:absolute;top:6px;right:6px;background:var(--brand);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:.72rem;cursor:pointer;">Copy</button>
+  </div>
+</div>
+
+<script>
+function copyEmbed() {
+  const code = document.getElementById('embedCode').textContent.trim();
+  navigator.clipboard.writeText(code).then(() => showToast('Embed code copied!', 'success'));
+}
+</script>
 
 <script>
 const EVENT_PK = {{ event.pk }};

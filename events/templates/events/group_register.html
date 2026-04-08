@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Group Registration — {{ event.title }}{% endblock %}
+{% block content %}
+<div class="container my-5" style="max-width:600px;">
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:2.5rem;">
+    <div style="margin-bottom:24px;">
+      <h2 style="font-size:1.4rem;margin-bottom:6px;">👥 Group Registration</h2>
+      <p style="color:var(--muted);font-size:.875rem;">
+        Register multiple people for <strong style="color:var(--text);">{{ event.title }}</strong>.
+        Max {{ max_group }} tickets. Each attendee gets their own QR code.
+      </p>
+    </div>
+
+    <form method="POST" id="groupForm">
+      {% csrf_token %}
+      <div id="attendeeList">
+        <!-- Attendee 1 = you -->
+        <div class="attendee-row mb-3" data-index="1">
+          <div style="font-size:.78rem;color:var(--brand);font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Attendee 1 (You)</div>
+          <input type="text" name="name" value="{{ user.get_full_name|default:user.username }}" readonly
+                 style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:var(--radius-sm);padding:9px 12px;margin-bottom:6px;outline:none;">
+          <input type="email" name="email" value="{{ user.email }}" readonly
+                 style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:var(--radius-sm);padding:9px 12px;outline:none;">
+        </div>
+      </div>
+
+      <button type="button" onclick="addAttendee()" id="addBtn"
+              class="btn-ghost w-100 mb-4" style="justify-content:center;">
+        <i class="bi bi-person-plus"></i>Add Another Attendee
+      </button>
+
+      <div style="background:var(--surface);border-radius:var(--radius-sm);padding:14px;margin-bottom:20px;font-size:.82rem;color:var(--muted);">
+        <div class="d-flex justify-content-between">
+          <span>Tickets:</span>
+          <span id="ticketCount" style="color:var(--text);font-weight:600;">1</span>
+        </div>
+        {% if event.price > 0 %}
+        <div class="d-flex justify-content-between mt-1">
+          <span>Total price:</span>
+          <span id="totalPrice" style="color:var(--brand);font-weight:700;">KES {{ event.price|floatformat:0 }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn-brand w-100" style="justify-content:center;padding:12px;">
+        <i class="bi bi-ticket-perforated"></i>Register Group
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+let count = 1;
+const max  = {{ max_group }};
+const price= {{ event.price }};
+
+function addAttendee() {
+  if (count >= max) { showToast(`Maximum ${max} tickets per group.`, 'warning'); return; }
+  count++;
+  const list = document.getElementById('attendeeList');
+  const div  = document.createElement('div');
+  div.className = 'attendee-row mb-3';
+  div.dataset.index = count;
+  div.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div style="font-size:.78rem;color:var(--brand);font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Attendee ${count}</div>
+      <button type="button" onclick="removeAttendee(this,${count})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;"><i class="bi bi-x-circle"></i></button>
+    </div>
+    <input type="text" name="name" required placeholder="Full name"
+           style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:9px 12px;margin-bottom:6px;outline:none;">
+    <input type="email" name="email" placeholder="Email (optional — for their ticket notification)"
+           style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:9px 12px;outline:none;">
+  `;
+  list.appendChild(div);
+  updateCounts();
+}
+
+function removeAttendee(btn, idx) {
+  btn.closest('.attendee-row').remove();
+  count = Math.max(1, count - 1);
+  updateCounts();
+}
+
+function updateCounts() {
+  const rows = document.querySelectorAll('.attendee-row').length;
+  document.getElementById('ticketCount').textContent = rows;
+  if (price > 0) document.getElementById('totalPrice').textContent = `KES ${(price * rows).toFixed(0)}`;
+  document.getElementById('addBtn').style.display = rows >= max ? 'none' : 'flex';
+}
+</script>
+<style>input,textarea{outline:none;}input:focus,textarea:focus{border-color:var(--brand)!important;box-shadow:0 0 0 3px var(--brand-glow)!important;}</style>
+{% endblock %}
+

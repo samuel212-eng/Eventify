@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Transfer Ticket — Eventify{% endblock %}
+{% block content %}
+<div class="container my-5" style="max-width:480px;">
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:2.5rem;">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:2.5rem;margin-bottom:10px;">🎟️➡️</div>
+      <h2 style="font-size:1.4rem;margin-bottom:6px;">Transfer Your Ticket</h2>
+      <p style="color:var(--muted);font-size:.875rem;">
+        Transfer your ticket for <strong style="color:var(--text);">{{ reg.event.title }}</strong> to someone else.
+      </p>
+    </div>
+
+    <!-- Ticket info -->
+    <div style="background:var(--surface);border-radius:var(--radius-sm);padding:14px;margin-bottom:20px;">
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:4px;">Your ticket</div>
+      <div style="font-weight:600;">{{ reg.event.title }}</div>
+      <div style="color:var(--muted);font-size:.82rem;margin-top:3px;">
+        {{ reg.event.date|date:"M d, Y · g:i A" }} · {{ reg.event.location }}
+      </div>
+      <div style="font-family:monospace;color:var(--brand);font-weight:700;margin-top:6px;letter-spacing:1px;">{{ reg.check_in_code }}</div>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Recipient's email address</label>
+        <input type="email" name="email" class="form-control" required
+               placeholder="friend@example.com" autocomplete="email">
+        <div style="color:var(--muted);font-size:.75rem;margin-top:4px;">
+          They must already have an Eventify account.
+        </div>
+      </div>
+      <div style="background:rgba(255,190,11,.08);border:1px solid rgba(255,190,11,.2);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px;font-size:.82rem;color:var(--warning);">
+        ⚠️ This action cannot be undone. Once transferred, you will lose your spot.
+      </div>
+      <button type="submit" class="btn-brand w-100" style="justify-content:center;padding:12px;">
+        <i class="bi bi-arrow-right-circle"></i>Transfer Ticket
+      </button>
+    </form>
+
+    <a href="{% url 'my_tickets' %}" style="display:block;text-align:center;margin-top:16px;color:var(--muted);font-size:.855rem;">Cancel</a>
+  </div>
+</div>
+<style>input{width:100%;background:var(--surface)!important;border:1px solid var(--border)!important;color:var(--text)!important;border-radius:var(--radius-sm)!important;padding:10px 14px!important;}input:focus{border-color:var(--brand)!important;box-shadow:0 0 0 3px var(--brand-glow)!important;outline:none!important;}</style>
+{% endblock %}
+

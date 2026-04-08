@@ -6,6 +6,7 @@ django.setup()
 from events.models import Event
 from django.utils.text import slugify
 
+# def run_fix():
 for event in Event.objects.all():
     if not event.slug:
         base = slugify(event.title)
@@ -18,3 +19,4 @@ for event in Event.objects.all():
         print(f"Fixed: {event.title}")
 
 print("All done!")
+# print(Event)

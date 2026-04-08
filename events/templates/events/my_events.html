@@ -59,14 +59,52 @@
                 <span class="tag" style="background:rgba(255,190,11,.15); color:#FFBE0B;">Draft</span>
               {% endif %}
             </div>
+{#            <div class="d-flex gap-2">#}
+{#              <a href="{% url 'event_detail' event.pk %}" class="btn btn-outline-brand btn-sm">View</a>#}
+{#              <a href="{% url 'event_edit'   event.pk %}" class="btn btn-brand btn-sm">Edit</a>#}
+{#                <a href="{% url 'manage_gallery' event.pk %}" class="btn btn-outline-brand btn-sm">#}
+{#  🖼️ Gallery#}
+{#</a>#}
+{#                <a href="{% url 'export_attendees' event.pk %}" class="btn btn-outline-brand btn-sm">#}
+{#                  <i class="bi bi-download me-1"></i>Export CSV#}
+{#                </a>#}
+{#            </div>#}
 
-            <div class="d-flex gap-2">
-              <a href="{% url 'event_detail' event.pk %}" class="btn btn-outline-brand btn-sm">View</a>
-              <a href="{% url 'event_edit'   event.pk %}" class="btn btn-brand btn-sm">Edit</a>
-                <a href="{% url 'export_attendees' event.pk %}" class="btn btn-outline-brand btn-sm">
-                  <i class="bi bi-download me-1"></i>Export CSV
-                </a>
-            </div>
+          <div class="d-flex flex-wrap gap-2">
+
+  <a href="{% url 'event_detail' event.pk %}" class="btn btn-outline-brand btn-sm">
+    View
+  </a>
+
+  <a href="{% url 'event_edit' event.pk %}" class="btn btn-brand btn-sm">
+    Edit
+  </a>
+
+  <a href="{% url 'export_attendees' event.pk %}" class="btn btn-outline-brand btn-sm">
+    <i class="bi bi-download me-1"></i>CSV
+  </a>
+
+  <a href="{% url 'organiser_dashboard' event.pk %}" class="btn-ghost btn-sm">
+    <i class="bi bi-bar-chart"></i>
+  </a>
+
+  <a href="{% url 'qr_scanner' event.pk %}" class="btn-brand btn-sm">
+    <i class="bi bi-qr-code-scan"></i>
+  </a>
+
+  <a href="{% url 'clone_event' event.pk %}" class="btn-ghost btn-sm">
+    <i class="bi bi-copy"></i>
+  </a>
+
+  <a href="{% url 'cancel_event' event.pk %}" class="btn-danger-soft btn-sm">
+    <i class="bi bi-x-circle"></i>
+  </a>
+
+  <a href="{% url 'manage_gallery' event.pk %}" class="btn-ghost btn-sm">
+    <i class="bi bi-images"></i>
+  </a>
+
+</div>
           </div>
         </div>
       {% endfor %}

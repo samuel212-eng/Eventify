@@ -4,6 +4,7 @@ from . import paypal_views
 from . import next10_views
 from . import extra_views, pdf_views
 from . import ai_views, gallery_views, dashboard_views
+from . import remaining_views
 urlpatterns = [
 
     # ══════════════════════════════════════════
@@ -144,14 +145,33 @@ urlpatterns = [
     # Redirect old /events/<int:pk>/ links to slug version
     path('events/<int:pk>/', views.event_detail_redirect, name='event_detail_redirect'),
 
-    # ⚠️  SLUG CATCH-ALL — THIS MUST BE ABSOLUTELY LAST
-    path('events/<slug:slug>/', views.event_detail, name='event_detail'),
-
-
 
     path('events/<int:event_pk>/ai-chat/',   ai_views.ai_event_chat,           name='ai_event_chat'),
     path('events/<int:event_pk>/dashboard/', dashboard_views.organiser_dashboard, name='organiser_dashboard'),
     path('events/<int:event_pk>/gallery/',   gallery_views.manage_gallery,      name='manage_gallery'),
     path('gallery/<int:image_pk>/delete/',   gallery_views.delete_gallery_image, name='delete_gallery_image'),
     path('events/<slug:event_slug>/gallery/view/', gallery_views.view_gallery, name='view_gallery'),
+    path('events/<int:event_pk>/scan/', views.qr_scanner_view, name='qr_scanner'),
+
+# Calendar export
+    path('events/<int:event_pk>/calendar/',  remaining_views.export_to_calendar, name='export_to_calendar'),
+
+# Clone event
+    path('events/<int:event_pk>/clone/',     remaining_views.clone_event,        name='clone_event'),
+
+# Ticket transfer
+    path('tickets/<int:registration_pk>/transfer/', remaining_views.transfer_ticket, name='transfer_ticket'),
+
+# Cancel event (organiser)
+    path('events/<int:event_pk>/cancel/',    remaining_views.cancel_event,       name='cancel_event'),
+
+# Group registration
+    path('events/<int:event_pk>/group-register/', remaining_views.group_register, name='group_register'),
+
+# Payout tracker
+    path('my-payouts/',                      remaining_views.organiser_payouts,  name='organiser_payouts'),
+
+    # ⚠️  SLUG CATCH-ALL — THIS MUST BE ABSOLUTELY LAST
+    path('events/<slug:slug>/', views.event_detail, name='event_detail'),
+
 ]
